@@ -18,6 +18,21 @@ def get_vertex_token():
     global _gcloud_token, _token_expiry
     now = time.time()
     if not _gcloud_token or now > _token_expiry:
+        # Standard GCP Cloud Run runtime auth
+        try:
+            import google.auth
+            import google.auth.transport.requests
+            creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+            auth_req = google.auth.transport.requests.Request()
+            creds.refresh(auth_req)
+            if creds.token:
+                _gcloud_token = creds.token
+                _token_expiry = now + 3000
+                return _gcloud_token
+        except Exception:
+            pass
+
+        # Local development gcloud CLI fallback
         try:
             res = subprocess.run(
                 "gcloud auth print-access-token",
