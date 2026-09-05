@@ -13,16 +13,19 @@ class Settings(BaseSettings):
     
     SQLALCHEMY_DATABASE_URI: str = os.getenv("SQLALCHEMY_DATABASE_URI", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
     
-    # Google Cloud Vertex AI settings
+    # Environment mode: 'production' uses Gemini 3.1 Pro on Vertex AI; 'development' uses Nvidia model
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    
+    # Google Cloud Vertex AI settings (Production LLM)
     USE_VERTEX_AI: bool = True
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "project-e3e4dcb5-593d-4e61-9a8")
     GCP_LOCATION: str = os.getenv("GCP_LOCATION", "us-central1")
-    GCP_MODEL: str = os.getenv("GCP_MODEL", "gemini-2.5-pro")
+    GCP_MODEL: str = os.getenv("GCP_MODEL", "gemini-3.1-pro")
 
-    # AI settings (Nvidia fallback)
+    # Nvidia AI settings (Development LLM)
     NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "")
     NVIDIA_BASE_URL: str = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
-    NVIDIA_MODEL: str = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-4-340b-instruct")
+    NVIDIA_MODEL: str = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b")
 
     class Config:
         env_file = ".env"

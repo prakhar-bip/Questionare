@@ -8,9 +8,16 @@ Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (S
 
 ## 🌐 Live Production Deployment Links (GCP Cloud Run)
 
-- **Live Application (Frontend)**: [https://questline-frontend-526912959525.us-central1.run.app](https://questline-frontend-526912959525.us-central1.run.app)
+- **Live Application (Frontend)**: [https://questline-526912959525.us-central1.run.app](https://questline-526912959525.us-central1.run.app)
 - **Live REST API & Swagger Docs (Backend)**: [https://questline-backend-526912959525.us-central1.run.app/docs](https://questline-backend-526912959525.us-central1.run.app/docs)
 - **GitHub Repository**: [https://github.com/prakhar-bip/Questionare](https://github.com/prakhar-bip/Questionare)
+
+---
+
+## 🤖 Dual-Mode LLM Engine
+
+- **Production Mode (`ENVIRONMENT=production`)**: Powered by **Google Cloud Vertex AI (Gemini 3.1 Pro)** for maximum reasoning depth, architectural blueprints, and student mentorship.
+- **Development Mode (`ENVIRONMENT=development`)**: Powered by **Nvidia NIM (`nemotron-3-ultra-550b-a55b`)** for rapid local prototyping and iteration.
 
 ---
 

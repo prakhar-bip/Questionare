@@ -93,18 +93,7 @@ def call_vertex_gemini(prompt: str, system_instruction: str = None, temperature:
     parts = candidates[0].get("content", {}).get("parts", [])
     return "".join(p.get("text", "") for p in parts)
 
-def call_llm(prompt: str, system_instruction: str = None, temperature: float = 0.4, max_tokens: int = 4096):
-    """
-    Unified LLM caller: First uses Google Cloud Vertex AI (Gemini Pro),
-    and falls back to Nvidia NIM if Vertex AI is not available.
-    """
-    if settings.USE_VERTEX_AI:
-        try:
-            return call_vertex_gemini(prompt, system_instruction, temperature, max_tokens)
-        except Exception as e:
-            print(f"Vertex AI error: {e}. Falling back to Nvidia model...")
-    
-    # Fallback to Nvidia
+def call_nvidia(prompt: str, system_instruction: str = None, temperature: float = 0.4, max_tokens: int = 4096):
     messages = []
     if system_instruction:
         messages.append({"role": "system", "content": system_instruction})
@@ -116,6 +105,29 @@ def call_llm(prompt: str, system_instruction: str = None, temperature: float = 0
         max_tokens=max_tokens
     )
     return response.choices[0].message.content
+
+def call_llm(prompt: str, system_instruction: str = None, temperature: float = 0.4, max_tokens: int = 4096):
+    """
+    LLM Router:
+    - In PRODUCTION: Uses Google Cloud Vertex AI (Gemini 3.1 Pro).
+    - In DEVELOPMENT: Uses Nvidia NIM model (Nemotron).
+    """
+    is_production = settings.ENVIRONMENT.lower() == "production"
+
+    if is_production:
+        # Production: Primary is Vertex AI Gemini 3.1 Pro
+        try:
+            return call_vertex_gemini(prompt, system_instruction, temperature, max_tokens)
+        except Exception as e:
+            print(f"Vertex AI error in production: {e}. Falling back to Nvidia...")
+            return call_nvidia(prompt, system_instruction, temperature, max_tokens)
+    else:
+        # Development: Primary is Nvidia NIM model
+        try:
+            return call_nvidia(prompt, system_instruction, temperature, max_tokens)
+        except Exception as e:
+            print(f"Nvidia NIM error in development: {e}. Falling back to Vertex AI...")
+            return call_vertex_gemini(prompt, system_instruction, temperature, max_tokens)
 
 def _extract_json(content: str):
     content = content.strip()
