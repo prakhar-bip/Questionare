@@ -6,6 +6,14 @@ Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (S
 
 ---
 
+## 🌐 Live Production Deployment Links (GCP Cloud Run)
+
+- **Live Application (Frontend)**: [https://questline-frontend-526912959525.us-central1.run.app](https://questline-frontend-526912959525.us-central1.run.app)
+- **Live REST API & Swagger Docs (Backend)**: [https://questline-backend-526912959525.us-central1.run.app/docs](https://questline-backend-526912959525.us-central1.run.app/docs)
+- **GitHub Repository**: [https://github.com/prakhar-bip/Questionare](https://github.com/prakhar-bip/Questionare)
+
+---
+
 ## 🌟 11-Step Workflow & Architecture
 
 1. **Student Discovery**: Conversational onboarding capturing field of study, technical skills, languages, frameworks, time budget, team size, and career ambitions.
