@@ -6,6 +6,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+ENV NITRO_PRESET=node-server
 RUN npm run build
 
 FROM node:20-alpine AS runner
