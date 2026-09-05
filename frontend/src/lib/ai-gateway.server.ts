@@ -9,7 +9,8 @@ export function requireApiKey() {
  * and Supabase persistence.
  */
 export async function generateJson<T>(opts: { system: string; prompt: string }): Promise<T> {
-  const backendUrl = process.env["BACKEND_URL"] || "http://127.0.0.1:8000";
+  const backendUrl =
+    process.env["BACKEND_URL"] || "https://questline-backend-gtu3eysx6q-uc.a.run.app";
   try {
     const res = await fetch(`${backendUrl}/api/gateway/generate-json`, {
       method: "POST",
