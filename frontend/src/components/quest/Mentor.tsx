@@ -85,7 +85,7 @@ export function Mentor({
           />
         </svg>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-extrabold leading-tight">Your project mentor</p>
+          <p className="font-display text-sm font-extrabold leading-tight">Sarthi — Your Project Mentor</p>
           <p className="mono-label truncate">doubts, problems & guidance</p>
         </div>
         {onClose && (

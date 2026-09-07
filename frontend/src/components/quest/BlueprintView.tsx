@@ -22,7 +22,17 @@ function Section({
   );
 }
 
-export function BlueprintView({ b, changeLog }: { b: Blueprint; changeLog: string[] }) {
+export function BlueprintView({
+  b,
+  changeLog,
+  onGeneratePrototype,
+  isGeneratingPrototype = false,
+}: {
+  b: Blueprint;
+  changeLog: string[];
+  onGeneratePrototype?: () => void;
+  isGeneratingPrototype?: boolean;
+}) {
   return (
     <div className="space-y-5">
       <div className="panel q-rise overflow-hidden">
@@ -31,17 +41,29 @@ export function BlueprintView({ b, changeLog }: { b: Blueprint; changeLog: strin
             <span className="mono-label text-primary-foreground/80">your complete project plan</span>
             <h2 className="font-display text-3xl font-extrabold">{b.title}</h2>
           </div>
-          <svg viewBox="0 0 90 40" className="h-10 w-24">
-            <path
-              d="M4 32 h18 v-14 h18 v-10 h18 v24 h28"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="q-draw"
-            />
-          </svg>
+          <div className="flex items-center gap-3">
+            {onGeneratePrototype && (
+              <button
+                onClick={onGeneratePrototype}
+                disabled={isGeneratingPrototype}
+                className="btn-brutal flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 text-sm"
+              >
+                <span>⚡</span>
+                <span>{isGeneratingPrototype ? "Building Prototype..." : "Manifest Prototype"}</span>
+              </button>
+            )}
+            <svg viewBox="0 0 90 40" className="h-10 w-24">
+              <path
+                d="M4 32 h18 v-14 h18 v-10 h18 v24 h28"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="q-draw"
+              />
+            </svg>
+          </div>
         </div>
         <div className="grid gap-4 px-6 py-5 lg:grid-cols-2">
           <div className="space-y-3 text-sm">
@@ -227,6 +249,30 @@ export function BlueprintView({ b, changeLog }: { b: Blueprint; changeLog: strin
             ))}
           </ol>
         </Section>
+      )}
+
+      {onGeneratePrototype && (
+        <div className="panel q-rise border-2 border-accent bg-gradient-to-r from-accent/15 via-background to-accent/5 p-6 sm:p-8 text-center space-y-4">
+          <span className="mono-label rounded-full bg-accent/20 px-3 py-1 font-bold text-accent">
+            NEXT PHASE: THE GANDIVA SUITE
+          </span>
+          <h3 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Ready to turn this blueprint into working software?
+          </h3>
+          <p className="mx-auto max-w-xl text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Sarthi will synthesize your architecture, MVP features, and data flow into an interactive in-browser prototype and a multi-file starter codebase ready to download.
+          </p>
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={onGeneratePrototype}
+              disabled={isGeneratingPrototype}
+              className="btn-brutal flex items-center gap-2.5 bg-accent px-6 py-3 text-base font-extrabold text-accent-foreground shadow-lg hover:scale-105 transition-transform"
+            >
+              <span className="text-xl">⚡</span>
+              <span>{isGeneratingPrototype ? "Manifesting Prototype with Sarthi AI..." : "Manifest Working Prototype →"}</span>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

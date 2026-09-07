@@ -20,6 +20,7 @@ from app.services.ai_service import (
     generate_project_blueprint,
     mentor_chat_and_refine
 )
+from app.core.activity_logger import log_activity
 
 router = APIRouter()
 
@@ -173,7 +174,12 @@ def select_project(idea_id: int, db: Session = Depends(get_db)):
     project_idea.is_selected = True
     db.commit()
     db.refresh(project_idea)
-    
+    log_activity(
+        agent="Project Selection Agent [Database]",
+        success=True,
+        error=None,
+        warning_reason=None
+    )
     return project_idea
 
 @router.post("/{idea_id}/blueprint", response_model=ProjectBlueprintResponse)
@@ -249,6 +255,12 @@ def get_blueprint(idea_id: int, db: Session = Depends(get_db)):
     blueprint = db.query(ProjectBlueprint).filter(ProjectBlueprint.project_idea_id == idea_id).first()
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found for this project idea. Generate it first using POST.")
+    log_activity(
+        agent="Project Blueprint Retriever Agent [Database]",
+        success=True,
+        error=None,
+        warning_reason=None
+    )
     return blueprint
 
 @router.post("/{idea_id}/mentor/chat", response_model=MentorChatResponse)
@@ -365,6 +377,12 @@ def get_mentor_history(idea_id: int, db: Session = Depends(get_db)):
     Retrieve the full chat history between the student and the AI mentor.
     """
     messages = db.query(MentorMessage).filter(MentorMessage.project_idea_id == idea_id).order_by(MentorMessage.id.asc()).all()
+    log_activity(
+        agent="Mentor Chat History Agent [Database]",
+        success=True,
+        error=None,
+        warning_reason=None
+    )
     return messages
 
 

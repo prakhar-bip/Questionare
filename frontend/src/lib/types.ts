@@ -86,7 +86,104 @@ export type Stage =
   | "ideas"
   | "feasibility"
   | "blueprint"
+  | "prototype"
   | "mentor";
+
+export type PrototypeMetric = {
+  label: string;
+  value: string;
+  change?: string;
+};
+
+export type PrototypeAction = {
+  id: string;
+  label: string;
+  description: string;
+  mockResponse: string;
+};
+
+export type PrototypeScreen = {
+  id: string;
+  title: string;
+  subtitle: string;
+  iconName?: string;
+  metrics?: PrototypeMetric[];
+  inputForm?: {
+    title: string;
+    description: string;
+    fields: {
+      name: string;
+      label: string;
+      placeholder: string;
+      type: "text" | "number" | "select" | "textarea";
+      options?: string[];
+    }[];
+    submitLabel: string;
+    successMessage: string;
+  };
+  sampleItems?: {
+    title: string;
+    category: string;
+    status: string;
+    detail: string;
+  }[];
+  actions?: PrototypeAction[];
+};
+
+export type PrototypeFile = {
+  path: string;
+  language: string;
+  description: string;
+  code: string;
+};
+
+export type ApiEndpointContract = {
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  path: string;
+  summary: string;
+  requestBody?: string;
+  responseBody?: string;
+};
+
+export type ProductionBatchTarget = {
+  path: string;
+  language: string;
+  purpose: string;
+};
+
+export type ProductionBatch = {
+  id: string;
+  layerName: string;
+  description: string;
+  targetFiles: ProductionBatchTarget[];
+};
+
+export type ProductionManifest = {
+  title: string;
+  description: string;
+  databaseContract: string;
+  apiContract: ApiEndpointContract[];
+  envContract: string[];
+  batches: ProductionBatch[];
+};
+
+export type ProductionCodebase = {
+  manifest: ProductionManifest;
+  files: PrototypeFile[];
+  completedBatchIds: string[];
+  isGenerating?: boolean;
+  currentBatchIndex?: number;
+};
+
+export type PrototypeData = {
+  title: string;
+  tagline: string;
+  architectureSummary: string;
+  screens: PrototypeScreen[];
+  codeFiles: PrototypeFile[];
+  runInstructions: string[];
+  productionCodebase?: ProductionCodebase;
+};
 
 export type JourneyState = {
   stage: Stage;
@@ -97,6 +194,7 @@ export type JourneyState = {
   feasibility: Feasibility | null;
   blueprint: Blueprint | null;
   scroll: QuestScroll | null;
+  prototype: PrototypeData | null;
   changeLog: string[];
   xp: number;
   badges: string[];
@@ -111,6 +209,7 @@ export const emptyJourney: JourneyState = {
   feasibility: null,
   blueprint: null,
   scroll: null,
+  prototype: null,
   changeLog: [],
   xp: 0,
   badges: [],
@@ -122,6 +221,7 @@ export const BADGES: Record<string, { label: string; hint: string }> = {
   tinkerer: { label: "Refined", hint: "Refined the ideas with your feedback" },
   realist: { label: "Checked", hint: "Ran a reality check on your project" },
   architect: { label: "Plan", hint: "Unlocked your full project plan" },
+  builder: { label: "Prototype", hint: "Manifested your interactive software prototype" },
   apprentice: { label: "Mentor", hint: "Talked things through with your mentor" },
   shipwright: { label: "Updated", hint: "Updated the plan after a mentor chat" },
   loremaster: { label: "Summary", hint: "Created a short summary of your plan" },
@@ -140,4 +240,12 @@ export type QuestScroll = {
   loadout: string[];
   nextThreeMoves: string[];
   bossRisks: string[];
+};
+
+export type AuthUser = {
+  id: number | string;
+  email: string;
+  fullName: string;
+  isGuest?: boolean;
+  createdAt?: string;
 };

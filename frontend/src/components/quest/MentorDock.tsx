@@ -48,7 +48,7 @@ export function MentorDock({
           <circle cx="26" cy="18" r="2.5" fill="currentColor" />
           <path d="M13 26 q7 5 14 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
-        {open ? "Hide mentor" : "Ask your mentor"}
+        {open ? "Hide Sarthi" : "Ask Sarthi"}
       </button>
     </div>
   );

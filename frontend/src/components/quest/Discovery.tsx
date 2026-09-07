@@ -108,13 +108,15 @@ const inputCls =
 export function Discovery({
   busy,
   onComplete,
+  initialName = "",
 }: {
   busy: boolean;
   onComplete: (p: StudentProfile) => void;
+  initialName?: string;
 }) {
   const [step, setStep] = useState(0);
   const [p, setP] = useState<StudentProfile>({
-    name: "",
+    name: initialName || "",
     fieldOfStudy: "Computer Science",
     yearOfStudy: "Final year",
     skills: [],

@@ -1,6 +1,6 @@
 export function Mascot({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 120 120" className={className} role="img" aria-label="Questline compass mascot">
+    <svg viewBox="0 0 120 120" className={className} role="img" aria-label="Sarthi guide mascot">
       <g className="q-float">
         <circle cx="60" cy="60" r="44" fill="var(--surface)" stroke="var(--foreground)" strokeWidth="3" />
         <circle

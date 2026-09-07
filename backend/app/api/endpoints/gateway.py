@@ -8,6 +8,14 @@ router = APIRouter()
 class GenerateJsonRequest(BaseModel):
     system: str
     prompt: str
+    agent_name: Optional[str] = "Sarthi JSON Gateway Agent"
+
+class GenerateTextRequest(BaseModel):
+    system: Optional[str] = None
+    prompt: str
+    temperature: Optional[float] = 0.3
+    max_tokens: Optional[int] = 8192
+    agent_name: Optional[str] = "Sarthi Code Architect Agent"
 
 class ChatMessage(BaseModel):
     role: str
@@ -23,10 +31,32 @@ def gateway_generate_json(req: GenerateJsonRequest):
     Direct JSON generation bridge for frontend server functions using Vertex AI Gemini Pro.
     """
     try:
-        data = generate_raw_json(system=req.system, prompt=req.prompt)
+        data = generate_raw_json(
+            system=req.system,
+            prompt=req.prompt,
+            agent_name=req.agent_name or "Sarthi JSON Gateway Agent"
+        )
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vertex AI JSON generation failed: {str(e)}")
+
+@router.post("/generate-text")
+def gateway_generate_text(req: GenerateTextRequest):
+    """
+    Direct code and text generation bridge for frontend server functions using Vertex AI Gemini Pro.
+    Ideal for source code files, documentation, and markdown artifacts with zero JSON escaping friction.
+    """
+    try:
+        text = call_llm(
+            prompt=req.prompt,
+            system_instruction=req.system,
+            temperature=req.temperature or 0.3,
+            max_tokens=req.max_tokens or 8192,
+            agent_name=req.agent_name or "Sarthi Code Architect Agent"
+        )
+        return {"text": text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Vertex AI text generation failed: {str(e)}")
 
 @router.post("/chat")
 def gateway_chat(req: ChatRequest):
@@ -35,7 +65,7 @@ def gateway_chat(req: ChatRequest):
     """
     try:
         system = (
-            "You are the AI Project Mentor inside Questline, guiding a final-year student through their project. "
+            "You are Sarthi, the AI Project Mentor and guide, inspired by the charioteer who guides students with clarity and wisdom through their engineering projects. "
             "You know their profile and their current project blueprint. Answer questions about implementation, "
             "stack choices, scope, alternatives and complexity. Be concrete, helpful, and concise."
         )
@@ -54,7 +84,7 @@ def gateway_chat(req: ChatRequest):
         if not last_msg:
             last_msg = "Hello mentor, can you help me with my project?"
             
-        text = call_llm(prompt=last_msg, system_instruction=system, temperature=0.6, max_tokens=1024)
+        text = call_llm(prompt=last_msg, system_instruction=system, temperature=0.6, max_tokens=1024, agent_name="Sarthi Direct Chat Mentor Agent")
         return {"text": text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vertex AI chat failed: {str(e)}")

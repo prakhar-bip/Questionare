@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BlueprintView } from "@/components/quest/BlueprintView";
 import { Discovery } from "@/components/quest/Discovery";
@@ -11,14 +11,20 @@ import { Mentor } from "@/components/quest/Mentor";
 import { MentorDock } from "@/components/quest/MentorDock";
 import { PlanChangeBar } from "@/components/quest/PlanChangeBar";
 import { ProfileCard } from "@/components/quest/ProfileCard";
+import { PrototypeSandbox } from "@/components/quest/PrototypeSandbox";
 import { QuestHud } from "@/components/quest/QuestHud";
 import { QuestScrollPanel } from "@/components/quest/QuestScroll";
 import { useJourney } from "@/lib/journey";
+import { useAuth } from "@/lib/auth-context";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { LogOut, Sparkles, ShieldCheck } from "lucide-react";
 import {
   analyzeFeasibility,
   buildProfile,
   generateBlueprint,
   generateIdeas,
+  generatePrototype,
   refineIdeas,
   summarizeBlueprint,
   updateBlueprint,
@@ -28,17 +34,17 @@ import type { ProjectIdea, StudentProfile } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Questline — AI final-year project planner for students" },
+      { title: "Sarthi — AI Final-Year Project Planner for Students" },
       {
         name: "description",
         content:
-          "Turn your skills, interests and goals into a matched final-year project idea, a feasibility check and a full build blueprint — guided by an AI mentor.",
+          "Sarthi: Turn your skills, interests and goals into a matched final-year project idea, a feasibility check and a full build blueprint — guided by an AI charioteer and mentor.",
       },
-      { property: "og:title", content: "Questline — AI final-year project planner" },
+      { property: "og:title", content: "Sarthi — AI Final-Year Project Planner" },
       {
         property: "og:description",
         content:
-          "Discover, score, refine and plan your final-year project with an AI architect and mentor.",
+          "Discover, score, refine and plan your final-year project with Sarthi — your AI architect and mentor.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,39 +66,172 @@ function Loader({ label }: { label: string }) {
   );
 }
 
-function Intro({ onStart }: { onStart: () => void }) {
+function LandingNavbar({
+  onOpenAuth,
+}: {
+  onOpenAuth: (tab: "login" | "register") => void;
+}) {
+  const { user, isAuthenticated, logout } = useAuth();
+
   return (
-    <section className="mx-auto max-w-4xl px-1 py-10 text-center">
-      <div className="q-pop mx-auto mb-6 w-fit">
-        <Mascot className="size-28" />
+    <nav className="sticky top-0 z-30 border-b-2 border-border bg-background/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <Mascot className="size-10 shrink-0" />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-display text-xl font-black tracking-tight">Sarthi</span>
+              <span className="mono-label rounded-md bg-accent/20 px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground border border-accent/30">
+                सारथी
+              </span>
+            </div>
+            <p className="mono-label text-[11px] text-muted-foreground hidden sm:block">
+              AI Project Charioteer & Architect
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-full border-2 border-foreground bg-accent/20 px-3 py-1 text-xs">
+                <span className="grid size-6 place-items-center rounded-full bg-accent font-black text-accent-foreground text-xs shadow-sm">
+                  {user.fullName ? user.fullName[0].toUpperCase() : user.email[0].toUpperCase()}
+                </span>
+                <span className="font-bold text-foreground max-w-[120px] truncate sm:max-w-none">
+                  {user.fullName || user.email.split("@")[0]}
+                </span>
+                <span className="mono-label text-[10px] text-muted-foreground hidden md:inline">
+                  {user.isGuest ? "· Guest" : "· Student"}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="mono-label flex items-center gap-1.5 rounded-full border-2 border-foreground bg-destructive/15 px-3 py-1.5 text-xs font-bold text-foreground transition-all hover:bg-destructive hover:text-destructive-foreground shadow-[2px_2px_0_0_var(--foreground)]"
+                title="Log Out of Sarthi"
+              >
+                <LogOut className="size-3.5" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onOpenAuth("login")}
+                className="mono-label rounded-full border-2 border-border px-3.5 py-1.5 text-xs font-bold transition-all hover:bg-sunken hover:border-foreground"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => onOpenAuth("register")}
+                className="pop-btn bg-accent px-4 py-1.5 font-display text-xs font-black text-accent-foreground shadow-[2px_2px_0_0_var(--foreground)]"
+              >
+                Create Account
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      <span className="mono-label">final-year project planner</span>
-      <h1 className="q-rise mt-2 font-display text-5xl font-extrabold leading-[0.95] sm:text-6xl">
-        Stop guessing your
-        <span className="text-accent"> final-year project.</span>
-      </h1>
-      <SparkLine className="mx-auto mt-3 h-10 w-72" />
-      <p className="q-rise mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground" style={{ animationDelay: "120ms" }}>
-        Answer a few short questions. Get project ideas scored around your skills, time and career
-        goal — then an honest reality check, a full build plan, and a mentor who updates the plan as
-        you talk to it.
-      </p>
-      <button
-        onClick={onStart}
-        className="pop-btn q-pop mt-8 bg-accent px-8 py-3.5 font-display text-lg font-extrabold text-accent-foreground"
-        style={{ animationDelay: "220ms" }}
-      >
-        Get started →
-      </button>
-      <div className="mt-10 grid gap-4 text-left sm:grid-cols-3">
+    </nav>
+  );
+}
+
+function Intro({
+  onStart,
+  onOpenAuth,
+}: {
+  onStart: () => void;
+  onOpenAuth: (tab: "login" | "register") => void;
+}) {
+  const { user, isAuthenticated } = useAuth();
+
+  return (
+    <section className="mx-auto max-w-6xl px-1 py-8 sm:py-12">
+      {/* Top Banner on Landing Page */}
+      <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        {/* Left Hero Column */}
+        <div className="text-left">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="q-pop w-fit">
+              <Mascot className="size-16 sm:size-20" />
+            </div>
+            <div>
+              <span className="mono-label rounded-full bg-sunken px-3 py-1 border border-border">
+                final-year project charioteer
+              </span>
+              {isAuthenticated && user && (
+                <p className="mt-1.5 text-xs font-bold text-success flex items-center gap-1">
+                  <span className="size-2 rounded-full bg-success animate-pulse inline-block" />
+                  Signed in as {user.fullName || user.email}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <h1 className="q-rise font-display text-4xl font-extrabold leading-[0.95] sm:text-5xl lg:text-6xl">
+            Stop guessing your
+            <span className="text-accent"> final-year project.</span>
+          </h1>
+
+          <SparkLine className="mt-3 h-8 w-64" />
+
+          <p
+            className="q-rise mt-4 max-w-xl text-sm sm:text-base leading-relaxed text-muted-foreground"
+            style={{ animationDelay: "120ms" }}
+          >
+            Answer a few short questions. Get project ideas scored around your skills, time and career
+            goal — then an honest reality check, a full build plan, and an AI mentor who updates the
+            plan as you talk to it.
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              onClick={onStart}
+              className="pop-btn q-pop bg-accent px-8 py-3.5 font-display text-base font-extrabold text-accent-foreground shadow-[4px_4px_0_0_var(--foreground)]"
+              style={{ animationDelay: "220ms" }}
+            >
+              {isAuthenticated ? "Launch Project Discovery →" : "Get started →"}
+            </button>
+            {!isAuthenticated && (
+              <button
+                onClick={() => onOpenAuth("login")}
+                className="mono-label rounded-xl border-2 border-border bg-background px-5 py-3 text-xs font-bold transition-all hover:bg-sunken hover:border-foreground"
+              >
+                Already have an account? Sign In
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right Auth Column: Embedded Auth Card right on the landing page */}
+        <div className="w-full">
+          <AuthCard onStartJourney={onStart} />
+        </div>
+      </div>
+
+      {/* 3 Step Features */}
+      <div className="mt-14 grid gap-4 text-left sm:grid-cols-3">
         {[
-          ["01 · Discover", "A few short questions turn your skills, interests, time and goals into a profile."],
-          ["02 · See ideas", "Four scored project ideas, each explained against your profile."],
-          ["03 · Build the plan", "A reality check, a full plan, and a mentor that keeps updating it."],
+          [
+            "01 · Authenticate & Discover",
+            "Sign into your student account and answer a few quick questions to capture your skills, interests, and constraints.",
+          ],
+          [
+            "02 · Scored Project Ideas",
+            "Get tailored final-year capstone ideas ranked with multi-dimensional match scores and difficulty estimates.",
+          ],
+          [
+            "03 · Build Plan & AI Mentor",
+            "Unlock an honest reality check, complete system blueprint, and an interactive Krishna charioteer mentor.",
+          ],
         ].map(([tag, text], i) => (
-          <div key={tag} className="panel q-rise px-4 py-4" style={{ animationDelay: `${300 + i * 90}ms` }}>
-            <span className="mono-label">{tag}</span>
-            <p className="mt-1 text-sm">{text}</p>
+          <div
+            key={tag}
+            className="panel q-rise px-5 py-4 border-2 border-foreground"
+            style={{ animationDelay: `${300 + i * 90}ms` }}
+          >
+            <span className="mono-label font-bold text-accent">{tag}</span>
+            <p className="mt-1.5 text-xs sm:text-sm text-foreground/90 leading-relaxed">{text}</p>
           </div>
         ))}
       </div>
@@ -102,11 +241,38 @@ function Intro({ onStart }: { onStart: () => void }) {
 
 function Home() {
   const { state, update, award, reset, hydrated } = useJourney();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
   const [busy, setBusy] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [scrollBusy, setScrollBusy] = useState(false);
   const [askSeed, setAskSeed] = useState<{ text: string; n: number } | null>(null);
   const [dockOpen, setDockOpen] = useState(false);
+
+  // Strict session clearance & auth guard:
+  // If not authenticated or after every session clearance, strictly reset and lock to landing page
+  useEffect(() => {
+    if (hydrated && !isLoading && !isAuthenticated) {
+      if (state.stage !== "intro") {
+        reset();
+      }
+    }
+  }, [hydrated, isLoading, isAuthenticated, state.stage, reset]);
+
+  const openAuth = (tab: "login" | "register") => {
+    setAuthModalTab(tab);
+    setAuthModalOpen(true);
+  };
+
+  const handleStartJourney = () => {
+    if (!isAuthenticated) {
+      openAuth("login");
+      toast.info("Please sign in or create an account to access the project discovery quest.");
+    } else {
+      update({ stage: "discovery" });
+    }
+  };
 
   const doBuildProfile = useServerFn(buildProfile);
   const doGenerateIdeas = useServerFn(generateIdeas);
@@ -115,6 +281,7 @@ function Home() {
   const doBlueprint = useServerFn(generateBlueprint);
   const doUpdateBlueprint = useServerFn(updateBlueprint);
   const doSummarize = useServerFn(summarizeBlueprint);
+  const doGeneratePrototype = useServerFn(generatePrototype);
 
   const selected = state.ideas.find((i) => i.id === state.selectedIdeaId) ?? null;
 
@@ -252,28 +419,59 @@ function Home() {
     }
   }
 
+  async function handleGeneratePrototype() {
+    if (!state.profile || !state.blueprint) return;
+    setBusy("Manifesting your software prototype and codebase with Sarthi AI...");
+    try {
+      const prototype = await doGeneratePrototype({
+        data: { profile: state.profile, blueprint: state.blueprint },
+      });
+      update({
+        prototype,
+        stage: "prototype",
+      });
+      award(350, "builder");
+      toast.success("Interactive prototype & starter codebase ready!");
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (!hydrated) return null;
+
+  // Strict authentication guard: only render quest pipeline if user is verified and authenticated
+  const showQuest = isAuthenticated && state.stage !== "intro";
 
   return (
     <div className="min-h-screen">
-      {state.stage !== "intro" && (
+      {!showQuest && <LandingNavbar onOpenAuth={openAuth} />}
+
+      {showQuest && (
         <QuestHud stage={state.stage} badges={state.badges} onReset={reset} />
       )}
 
       <main className="mx-auto max-w-6xl px-5 py-8">
-        {state.stage === "intro" && <Intro onStart={() => update({ stage: "discovery" })} />}
+        {!showQuest && (
+          <Intro onStart={handleStartJourney} onOpenAuth={openAuth} />
+        )}
 
-        {busy && (
+        {showQuest && busy && (
           <div className="py-6">
             <Loader label={busy} />
           </div>
         )}
 
-        {!busy && state.stage === "discovery" && (
-          <Discovery busy={false} onComplete={handleDiscovery} />
+        {showQuest && !busy && state.stage === "discovery" && (
+          <Discovery
+            busy={false}
+            onComplete={handleDiscovery}
+            initialName={user?.fullName || ""}
+          />
         )}
 
-        {!busy && state.stage === "profile" && state.profile && (
+        {showQuest && !busy && state.stage === "profile" && state.profile && (
           <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
             <ProfileCard p={state.profile} />
             <div className="panel q-rise flex flex-col justify-center gap-4 px-6 py-8">
@@ -300,7 +498,7 @@ function Home() {
           </div>
         )}
 
-        {!busy && state.stage === "ideas" && state.profile && (
+        {showQuest && !busy && state.stage === "ideas" && state.profile && (
           <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
             <div className="hidden lg:block">
               <ProfileCard p={state.profile} compact />
@@ -316,7 +514,7 @@ function Home() {
           </div>
         )}
 
-        {!busy && state.stage === "feasibility" && selected && state.feasibility && (
+        {showQuest && !busy && state.stage === "feasibility" && selected && state.feasibility && (
           <FeasibilityPanel
             idea={selected}
             f={state.feasibility}
@@ -326,7 +524,7 @@ function Home() {
           />
         )}
 
-        {!busy && state.stage === "blueprint" && state.blueprint && state.profile && (
+        {showQuest && !busy && state.stage === "blueprint" && state.blueprint && state.profile && (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -340,7 +538,12 @@ function Home() {
               onAsk={ask}
             />
             <PlanChangeBar busy={applying} onSubmit={(req) => void handleApply(req)} />
-            <BlueprintView b={state.blueprint} changeLog={state.changeLog} />
+            <BlueprintView
+              b={state.blueprint}
+              changeLog={state.changeLog}
+              onGeneratePrototype={() => void handleGeneratePrototype()}
+              isGeneratingPrototype={Boolean(busy)}
+            />
             <MentorDock
               profile={state.profile}
               blueprint={state.blueprint}
@@ -349,12 +552,30 @@ function Home() {
               onToggle={setDockOpen}
               onAsked={() => award(40, "apprentice")}
             />
+          </div>
+        )}
 
+        {showQuest && !busy && state.stage === "prototype" && state.prototype && state.blueprint && (
+          <div className="space-y-6">
+            <PrototypeSandbox
+              prototype={state.prototype}
+              blueprint={state.blueprint}
+              profile={state.profile}
+              onBackToBlueprint={() => update({ stage: "blueprint" })}
+            />
+            <MentorDock
+              profile={state.profile}
+              blueprint={state.blueprint}
+              askSeed={askSeed}
+              open={dockOpen}
+              onToggle={setDockOpen}
+              onAsked={() => award(40, "apprentice")}
+            />
           </div>
         )}
 
 
-        {!busy && state.stage === "mentor" && state.blueprint && state.profile && (
+        {showQuest && !busy && state.stage === "mentor" && state.blueprint && state.profile && (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,440px)_1fr]">
             <div className="order-2 space-y-6 lg:order-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -387,6 +608,13 @@ function Home() {
           </div>
         )}
       </main>
+
+      <AuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        defaultTab={authModalTab}
+        onSuccess={() => update({ stage: "discovery" })}
+      />
     </div>
   );
 }

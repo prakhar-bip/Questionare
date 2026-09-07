@@ -1,5 +1,7 @@
 import { BADGES, type Stage } from "@/lib/types";
 import { Mascot } from "./Mascot";
+import { useAuth } from "@/lib/auth-context";
+import { LogOut } from "lucide-react";
 
 const STAGES: { key: Stage; label: string }[] = [
   { key: "discovery", label: "Discovery" },
@@ -7,6 +9,7 @@ const STAGES: { key: Stage; label: string }[] = [
   { key: "ideas", label: "Project ideas" },
   { key: "feasibility", label: "Reality check" },
   { key: "blueprint", label: "Your plan" },
+  { key: "prototype", label: "Prototype" },
 ];
 
 export function QuestHud({
@@ -20,6 +23,7 @@ export function QuestHud({
 }) {
   const activeIndex = STAGES.findIndex((s) => s.key === stage);
   const pct = Math.round(((activeIndex + 1) / STAGES.length) * 100);
+  const { user, logout } = useAuth();
 
 
   return (
@@ -28,8 +32,8 @@ export function QuestHud({
         <div className="flex items-center gap-2.5">
           <Mascot className="size-10 shrink-0" />
           <div className="leading-none">
-            <p className="font-display text-lg font-extrabold">Questline</p>
-            <p className="mono-label mt-1">final-year project planner</p>
+            <p className="font-display text-lg font-extrabold">Sarthi</p>
+            <p className="mono-label mt-1">AI project charioteer & planner</p>
           </div>
         </div>
 
@@ -68,6 +72,29 @@ export function QuestHud({
           <span className="mono-label hidden rounded-full border-2 border-border bg-sunken px-3 py-1.5 sm:inline-block">
             progress saved
           </span>
+
+          {user && (
+            <div className="flex items-center gap-1.5 rounded-full border-2 border-foreground bg-accent/20 px-3 py-1.5 text-xs">
+              <span className="grid size-5 place-items-center rounded-full bg-accent text-[10px] font-black text-accent-foreground">
+                {user.fullName ? user.fullName[0].toUpperCase() : user.email[0].toUpperCase()}
+              </span>
+              <span className="max-w-[90px] truncate font-bold text-foreground sm:max-w-[140px]">
+                {user.fullName || user.email.split("@")[0]}
+              </span>
+              <span className="mono-label text-[10px] text-muted-foreground hidden md:inline">
+                {user.isGuest ? "· Guest" : "· Student"}
+              </span>
+            </div>
+          )}
+
+          <button
+            onClick={logout}
+            className="mono-label flex items-center gap-1.5 rounded-full border-2 border-foreground bg-destructive/15 px-3 py-1.5 text-xs font-bold text-foreground transition-all hover:bg-destructive hover:text-destructive-foreground shadow-[2px_2px_0_0_var(--foreground)]"
+            title="Log Out of Sarthi"
+          >
+            <LogOut className="size-3.5" />
+            <span>Log Out</span>
+          </button>
 
           <button
             onClick={onReset}

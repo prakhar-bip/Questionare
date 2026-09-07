@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { emptyJourney, type JourneyState } from "./types";
 
-const KEY = "questline.journey.v1";
+const KEY = "sarthi.journey.v1";
+const LEGACY_KEY = "questline.journey.v1";
 
 export function useJourney() {
   const [state, setState] = useState<JourneyState>(emptyJourney);
@@ -9,12 +10,25 @@ export function useJourney() {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(KEY);
+      const raw = window.localStorage.getItem(KEY) || window.localStorage.getItem(LEGACY_KEY);
       if (raw) setState({ ...emptyJourney, ...(JSON.parse(raw) as JourneyState) });
     } catch {
       /* ignore corrupt state */
     }
     setHydrated(true);
+
+    const onSessionCleared = () => {
+      setState(emptyJourney);
+      try {
+        window.localStorage.removeItem(KEY);
+        window.localStorage.removeItem(LEGACY_KEY);
+      } catch {
+        /* ignore */
+      }
+    };
+
+    window.addEventListener("sarthi:session_cleared", onSessionCleared);
+    return () => window.removeEventListener("sarthi:session_cleared", onSessionCleared);
   }, []);
 
   const update = useCallback((patch: Partial<JourneyState>) => {
@@ -49,7 +63,12 @@ export function useJourney() {
   );
 
   const reset = useCallback(() => {
-    window.localStorage.removeItem(KEY);
+    try {
+      window.localStorage.removeItem(KEY);
+      window.localStorage.removeItem(LEGACY_KEY);
+    } catch {
+      /* ignore */
+    }
     setState(emptyJourney);
   }, []);
 

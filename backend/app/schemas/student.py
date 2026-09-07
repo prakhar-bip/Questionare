@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 class StudentBase(BaseModel):
+    user_id: Optional[int] = None
     field_of_study: str
     year_of_study: str
     technical_skills: List[str]

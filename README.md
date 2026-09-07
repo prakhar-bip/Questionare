@@ -1,6 +1,8 @@
-# Questline — AI-Powered Final-Year Student Project Discovery & Planning Platform
+# Sarthi (सारथी) — AI-Powered Final-Year Student Project Discovery & Planning Platform
 
-Questline is an AI-powered platform designed to guide final-year university students through discovering, evaluating, refining, and architecting practical final-year engineering projects tailored to their skills, interests, time constraints, and career goals.
+> *"Just as Lord Krishna was the Sarathi (charioteer, strategist, and guide) to Arjuna on the battlefield of Kurukshetra, Sarthi acts as the intelligent charioteer for engineering students navigating the battlefield of their capstone projects."*
+
+**Sarthi** is an AI-powered platform designed to guide final-year university students through discovering, evaluating, refining, and architecting practical final-year engineering projects tailored to their skills, interests, time constraints, and career goals.
 
 Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (Supabase)**, and a modern **React/TanStack** frontend.
 
@@ -16,8 +18,8 @@ Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (S
 
 ## 🤖 Dual-Mode LLM Engine
 
-- **Production Mode (`ENVIRONMENT=production`)**: Powered by **Google Cloud Vertex AI (Gemini 3.1 Pro)** for maximum reasoning depth, architectural blueprints, and student mentorship.
-- **Development Mode (`ENVIRONMENT=development`)**: Powered by **Nvidia NIM (`nemotron-3-ultra-550b-a55b`)** for rapid local prototyping and iteration.
+- **Production Mode (`ENVIRONMENT=production`)**: Powered by **Google Cloud Vertex AI (`gemini-2.5-pro` as Primary, `gemini-2.5-flash` as Secondary)** for maximum reasoning depth, architectural blueprints, and student mentorship.
+- **Development & Fallback Engine**: Powered by **Nvidia NIM (`nemotron-3-ultra-550b-a55b`)** with multi-tier failover for rapid prototyping and high-throughput iteration.
 
 ---
 
