@@ -27,7 +27,8 @@ function getBackendCandidates(): string[] {
     candidates.push(process.env["BACKEND_URL"].replace(/\/+$/, ""));
   }
   candidates.push("http://127.0.0.1:8000");
-  candidates.push("https://questline-backend-gtu3eysx6q-uc.a.run.app");
+  candidates.push("https://sarthi-backend-526912959525.us-central1.run.app");
+  candidates.push("https://questline-backend-526912959525.us-central1.run.app");
   return Array.from(new Set(candidates));
 }
 

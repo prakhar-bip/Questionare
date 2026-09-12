@@ -10,8 +10,8 @@ Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (S
 
 ## 🌐 Live Production Deployment Links (GCP Cloud Run)
 
-- **Live Application (Frontend)**: [https://questline-526912959525.us-central1.run.app](https://questline-526912959525.us-central1.run.app)
-- **Live REST API & Swagger Docs (Backend)**: [https://questline-backend-526912959525.us-central1.run.app/docs](https://questline-backend-526912959525.us-central1.run.app/docs)
+- **Live Application (Frontend)**: [https://sarthi-526912959525.us-central1.run.app](https://sarthi-526912959525.us-central1.run.app)
+- **Live REST API & Swagger Docs (Backend)**: [https://sarthi-backend-526912959525.us-central1.run.app/docs](https://sarthi-backend-526912959525.us-central1.run.app/docs)
 - **GitHub Repository**: [https://github.com/prakhar-bip/Questionare](https://github.com/prakhar-bip/Questionare)
 
 ---

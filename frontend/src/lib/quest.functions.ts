@@ -210,6 +210,326 @@ JSON shape:
     });
   });
 
+export type AiThemeSuggestion = {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  bestFor: string;
+  badge: string;
+  palette: string[];
+  themeRationale: string;
+};
+
+export function generateProjectThemedSuggestions(
+  blueprint: Blueprint,
+  profile?: StudentProfile | null,
+): AiThemeSuggestion[] {
+  const text = `${blueprint.title || ""} ${blueprint.overview?.problemStatement || ""} ${blueprint.overview?.proposedSolution || ""} ${blueprint.overview?.targetUsers || ""} ${blueprint.stack?.map((s) => s.name).join(" ") || ""}`.toLowerCase();
+  const title = blueprint.title || "Your Project";
+  const targetUsers = blueprint.overview?.targetUsers || "evaluators and end-users";
+
+  // 1. Health / Medical / Bio
+  if (/health|patient|doctor|hospital|medical|disease|cancer|scan|clinical|cardio|ct\b|mri|drug|biomedical|ecg|mental|clinic|organ|blood/.test(text)) {
+    return [
+      {
+        id: "clinical-precision",
+        name: "Clinical Precision & Bio-Slate",
+        tagline: "Sterile arctic canvas, diagnostic cobalt & high-fidelity alerts",
+        description: "Zero visual fatigue layout with ice-blue neutral surfaces, crisp borders, and clinical-grade alert telemetry.",
+        bestFor: "Medical evaluators, hospital review boards, diagnostic demos",
+        badge: "CLINICAL GRADE",
+        palette: ["#0F172A", "#0284C7", "#F0F9FF", "#EF4444"],
+        themeRationale: `Tailored specifically for ${title}: provides high readability for ${targetUsers} with clinical clarity.`,
+      },
+      {
+        id: "caregiver-mint",
+        name: "Compassionate Care & Soothing Mint",
+        tagline: "Soft sage paper, calming terracotta & approachable wellness",
+        description: "Gentle organic curves, friendly card elevations, and warm accessible typography designed to reduce user anxiety.",
+        bestFor: "Patient-facing mobile portals, wellness trackers, recovery journals",
+        badge: "PATIENT CENTRIC",
+        palette: ["#F8FAF8", "#059669", "#EA580C", "#334155"],
+        themeRationale: `Designed for ${title}'s user experience: makes sensitive healthcare interactions feel welcoming and reassuring.`,
+      },
+      {
+        id: "spectral-dark-hud",
+        name: "Spectral Diagnostic Dark Mode",
+        tagline: "Obsidian void, luminous cyan telemetry & scan heatmaps",
+        description: "Ultra-dark radiology-grade canvas with bioluminescent indicators and high-contrast anomaly bounding boxes.",
+        bestFor: "AI inference visualizations, CT/MRI scan viewers, computer vision capstones",
+        badge: "AI VISION & IMAGING",
+        palette: ["#050811", "#06B6D4", "#F43F5E", "#1E293B"],
+        themeRationale: `Optimized for ${title}'s AI models and diagnostic pipeline, accentuating inference findings against deep contrast.`,
+      },
+    ];
+  }
+
+  // 2. Agriculture / CleanTech / Environmental / IoT
+  if (/crop|farm|agri|plant|soil|irrigation|weather|greenhouse|harvest|solar|eco|water|satellite|pest|leaf|fertilizer|livestock/.test(text)) {
+    return [
+      {
+        id: "terra-botanical",
+        name: "Terra Verdant & Botanical Tech",
+        tagline: "Deep forest pine, golden harvest accents & organic borders",
+        description: "Blends earthy chlorophyll greens with warm soil tones and clean agricultural sensor metrics.",
+        bestFor: "Agronomists, agricultural engineering fairs, farm monitoring dashboards",
+        badge: "AGRO-TECH VERIFIED",
+        palette: ["#14532D", "#F59E0B", "#F0FDF4", "#78350F"],
+        themeRationale: `Directly reflects ${title}'s agricultural domain, making sensor data and crop insights feel natural to ${targetUsers}.`,
+      },
+      {
+        id: "rugged-field-telemetry",
+        name: "Field Telemetry & Sunlight Rugged",
+        tagline: "Matte industrial charcoal, safety amber & extreme outdoor contrast",
+        description: "High-contrast daylight-optimized telemetry designed for rugged outdoor field tablets and drone monitors.",
+        bestFor: "Outdoor deployment, drone survey stations, solar & soil IoT sensors",
+        badge: "FIELD READY",
+        palette: ["#18181B", "#EAB308", "#22C55E", "#FAFAFA"],
+        themeRationale: `Engineered for real-world field conditions where ${targetUsers} need instant glanceability under bright sun.`,
+      },
+      {
+        id: "eco-clean-glass",
+        name: "Eco-Modern Clean Glass",
+        tagline: "Translucent leaf-green frosted glass & ambient sustainability glow",
+        description: "Modern sustainability aesthetic with subtle glassmorphic elevation, sage gradients, and ecological KPI cards.",
+        bestFor: "CleanTech capstones, smart city climate tracking, environmental showcases",
+        badge: "CLEANTECH POLISH",
+        palette: ["#064E3B", "#10B981", "#ECFDF5", "#047857"],
+        themeRationale: `Gives ${title} a sleek venture-backed CleanTech posture to impress hackathon judges and evaluators.`,
+      },
+    ];
+  }
+
+  // 3. Finance / Web3 / Crypto / E-Commerce / Billing
+  if (/finance|fintech|bank|pay|crypto|token|wallet|ledger|fraud|stock|trade|money|invoice|market|solidity|nft|contract|decentralized|loan|credit/.test(text)) {
+    return [
+      {
+        id: "vault-platinum",
+        name: "Vault Platinum & High-Trust Slate",
+        tagline: "Midnight navy, platinum micro-borders & glowing emerald ledger",
+        description: "Institutional financial security aesthetic with precision decimal typography and audit-ready indicators.",
+        bestFor: "Banking supervisors, fintech incubators, security compliance audits",
+        badge: "INSTITUTIONAL TRUST",
+        palette: ["#0A1128", "#10B981", "#E2E8F0", "#1C2541"],
+        themeRationale: `Instills immediate trust and compliance readiness for ${title}, proving data integrity to ${targetUsers}.`,
+      },
+      {
+        id: "terminal-high-freq",
+        name: "Terminal High-Density Dark",
+        tagline: "Obsidian void, tick amber, electric cyan & monospaced feeds",
+        description: "Ultra-dense algorithmic trading layout with live telemetry tickers, gas monitors, and monospace transaction logs.",
+        bestFor: "Crypto protocols, fraud detection pipelines, real-time transaction monitors",
+        badge: "ALGO TRADING SPEED",
+        palette: ["#0D1117", "#00F0FF", "#F59E0B", "#161B22"],
+        themeRationale: `Built for ${title}'s real-time transaction throughput and rapid state changes.`,
+      },
+      {
+        id: "neo-bank-coral",
+        name: "Neo-Bank Vivid Gradient",
+        tagline: "Crisp white canvas, electric violet & punchy coral curves",
+        description: "Modern consumer banking poise inspired by Stripe and Revolut, featuring smooth cards and vibrant action buttons.",
+        bestFor: "Consumer fintech, P2P payments, personal budgeting apps",
+        badge: "CONSUMER FINTECH",
+        palette: ["#FFFFFF", "#6366F1", "#F43F5E", "#0F172A"],
+        themeRationale: `Transforms ${title} into a delightful, modern product that feels ready for production release.`,
+      },
+    ];
+  }
+
+  // 4. Cybersecurity / Cloud / DevOps / Networks
+  if (/security|cyber|packet|firewall|auth|intrusion|threat|vulnerability|network|cloud|kubernetes|docker|server|linux|protocol|phishing|malware/.test(text)) {
+    return [
+      {
+        id: "zero-trust-stealth",
+        name: "Zero-Trust Stealth Terminal",
+        tagline: "Matte carbon, matrix phosphor green & tactical breach crimson",
+        description: "SOC operations console with high-density event streams, intrusion severity badges, and monospace logs.",
+        bestFor: "Cybersecurity defenses, packet inspection tools, automated vulnerability scanners",
+        badge: "SOC OPERATIONS",
+        palette: ["#0B0E14", "#22C55E", "#EF4444", "#1F2430"],
+        themeRationale: `Matches the visual standards of enterprise SOC analysts and security evaluators assessing ${title}.`,
+      },
+      {
+        id: "cloud-orchestrator",
+        name: "Cloud Orchestrator Bento",
+        tagline: "Dark titanium zinc, sapphire pipeline glows & cluster topology",
+        description: "Modular bento-grid layout showcasing microservice latency, container health, and CI/CD status cards.",
+        bestFor: "DevOps tools, cloud infrastructure monitors, distributed systems",
+        badge: "INFRASTRUCTURE POLISH",
+        palette: ["#09090B", "#3B82F6", "#A855F7", "#27272A"],
+        themeRationale: `Highlights ${title}'s architectural complexity and multi-service topology with clean enterprise elegance.`,
+      },
+      {
+        id: "tactical-recon",
+        name: "Tactical Infrared Monolith",
+        tagline: "Stealth obsidian, monochrome steel & hazard amber telemetry",
+        description: "Minimalist defense telemetry featuring monospaced IP tables, anomaly alerts, and threat vectors.",
+        bestFor: "Network defense showcases, endpoint security prototypes, threat intel",
+        badge: "THREAT INTEL",
+        palette: ["#121212", "#F97316", "#38BDF8", "#2A2A2A"],
+        themeRationale: `Puts incident detection and system vulnerabilities front-and-center for ${title}.`,
+      },
+    ];
+  }
+
+  // 5. Education / Student / Campus / Quiz / EdTech
+  if (/student|learn|study|course|quiz|exam|college|school|tutor|education|campus|teacher|book|class|notes|classroom|hackathon/.test(text)) {
+    return [
+      {
+        id: "campus-playful-bento",
+        name: "Campus Bento & Playful Mint",
+        tagline: "Warm ivory, playful pastel violet & rewarding XP badges",
+        description: "High-engagement student dashboard with bouncy rounded cards, gamified streaks, and vivid milestone celebration.",
+        bestFor: "EdTech platforms, quiz bots, student study groups, college hackathons",
+        badge: "HIGH ENGAGEMENT",
+        palette: ["#FEFCE8", "#8B5CF6", "#10B981", "#1E1B4B"],
+        themeRationale: `Keeps ${targetUsers} energized while interacting with ${title}'s learning modules.`,
+      },
+      {
+        id: "academic-codex",
+        name: "Focus Academic & Ivory Codex",
+        tagline: "Scholarly cream paper, rich burgundy & distraction-free serif",
+        description: "Refined editorial layout emphasizing research papers, structured notes, and deep scholarly focus.",
+        bestFor: "Academic literature reviews, thesis portals, university faculty presentations",
+        badge: "SCHOLARLY POISE",
+        palette: ["#FAF8F5", "#991B1B", "#166534", "#292524"],
+        themeRationale: `Gives ${title} university-grade gravitas and academic elegance for faculty review committees.`,
+      },
+      {
+        id: "cyber-tutor-hud",
+        name: "Cyber-Tutor Gamified Dark Mode",
+        tagline: "Midnight navy, electric cyan & radiant level-up gradients",
+        description: "Immersive dark mode designed for late-night coding sessions and competitive student leaderboards.",
+        bestFor: "Coding bootcamps, competitive programming platforms, STEM tutors",
+        badge: "GAMIFIED CODING",
+        palette: ["#0F172A", "#38BDF8", "#F43F5E", "#1E293B"],
+        themeRationale: `Transforms ${title} into a captivating daily challenge that drives student retention.`,
+      },
+    ];
+  }
+
+  // 6. AI / ML / Data Science / Computer Vision / NLP
+  if (/ai\b|ml\b|vision|dataset|nlp|neural|deep learning|tensor|predict|recommend|gpt|llm|classification|detection|speech|whisper|yolo|face/.test(text)) {
+    return [
+      {
+        id: "neural-aurora",
+        name: "Neural Aurora & Deep Indigo",
+        tagline: "Cosmic indigo void, radiant purple gradients & tensor vectors",
+        description: "Multi-dimensional AI aesthetic with glowing latent vector cards, token stream metrics, and fluid halos.",
+        bestFor: "LLM tooling, generative AI capstones, computer vision models",
+        badge: "NEURAL CORE",
+        palette: ["#0B0F19", "#818CF8", "#C084FC", "#1E293B"],
+        themeRationale: `Visually communicates the underlying machine intelligence and latent representations of ${title}.`,
+      },
+      {
+        id: "cognitive-minimal-bento",
+        name: "Cognitive Precision Bento",
+        tagline: "Ice-white canvas, royal cobalt telemetry & confidence meters",
+        description: "Clean, explainable AI dashboard with precision ROC curves, model loss telemetry, and modular cards.",
+        bestFor: "AI safety demos, production ML ops, academic defense presentations",
+        badge: "EXPLAINABLE AI",
+        palette: ["#F8FAFC", "#2563EB", "#059669", "#0F172A"],
+        themeRationale: `Proves model accuracy and verifiable inferences for ${title} to demanding project supervisors.`,
+      },
+      {
+        id: "ai-hacker-brutalism",
+        name: "Hacker AI High-Contrast Brutalism",
+        tagline: "Bold black borders, electric yellow badges & raw developer energy",
+        description: "Punchy, unapologetic neo-brutalist interface that screams hackathon winner and rapid AI innovation.",
+        bestFor: "High-energy hackathon pitches, prototype demos, developer conferences",
+        badge: "HACKATHON WINNER",
+        palette: ["#FEF08A", "#000000", "#38BDF8", "#FFFFFF"],
+        themeRationale: `Ensures ${title} stands out instantly on screen during high-velocity 3-minute project evaluations.`,
+      },
+    ];
+  }
+
+  // 7. General Engineering / Full-Stack Default Tailored to Project Title
+  return [
+    {
+      id: "project-modern-bento",
+      name: `${title} Modern SaaS Bento`,
+      tagline: "Polished neutral slate, royal indigo & structured bento cards",
+      description: "Clean contemporary engineering layout with micro-borders, rounded-2xl cards, and responsive metrics.",
+      bestFor: "Comprehensive final year engineering capstones, full-stack web demos",
+      badge: "ENGINEERING STANDARD",
+      palette: ["#0F172A", "#3B82F6", "#F8FAFC", "#E2E8F0"],
+      themeRationale: `Formulated specifically for ${title}: balances technical data density with polished visual ergonomics.`,
+    },
+    {
+      id: "project-bold-brutalist",
+      name: `${title} Bold Impact Brutalism`,
+      tagline: "Chunky 3px outlines, vivid drop shadows & energetic typography",
+      description: "Eye-catching high contrast interface with crisp component boundaries and vibrant call-to-actions.",
+      bestFor: "Student project competitions, live audience demos, capstone fairs",
+      badge: "MAXIMUM VISIBILITY",
+      palette: ["#FEF08A", "#BBF7D0", "#DDD6FE", "#000000"],
+      themeRationale: `Guarantees ${title}'s key workflows and architecture pop off the screen during review.`,
+    },
+    {
+      id: "project-deep-cyber",
+      name: `${title} Obsidian Telemetry HUD`,
+      tagline: "Pitch black background, radiant cyan badges & monospace telemetry",
+      description: "High-tech telemetry console featuring monospaced status logs, glowing data cards, and rapid state feedback.",
+      bestFor: "Real-time systems, IoT integrations, backend and API architecture demos",
+      badge: "REAL-TIME TELEMETRY",
+      palette: ["#05050A", "#00F0FF", "#FF007F", "#1A1A2E"],
+      themeRationale: `Highlights ${title}'s real-time features and architectural depth with futuristic precision.`,
+    },
+  ];
+}
+
+export const suggestThemes = createServerFn({ method: "POST" })
+  .inputValidator((data: { profile: StudentProfile; blueprint: Blueprint }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const res = await generateJson<{ suggestions: AiThemeSuggestion[] }>({
+        system: SYSTEM,
+        prompt: `${profileBlock(data.profile)}
+
+PROJECT BLUEPRINT:
+Title: ${data.blueprint.title}
+Problem: ${data.blueprint.overview.problemStatement}
+Solution: ${data.blueprint.overview.proposedSolution}
+Target Users: ${data.blueprint.overview.targetUsers}
+Tech Stack: ${data.blueprint.stack.map((s) => s.name).join(", ")}
+
+As Sarthi (AI project charioteer & design advisor), analyze the domain, problem statement, target audience, and technology of this engineering project.
+Devise 3 distinct, creative, and highly tailored UI design theme suggestions that would make this specific project stand out in college evaluations, hackathons, or supervisor presentations.
+Every suggestion MUST be deeply customized to "${data.blueprint.title}" and its specific problem domain. Do not produce generic themes.
+
+Ensure the palettes are 4 complementary hex color codes.
+
+JSON shape:
+{
+  "suggestions": [
+    {
+      "id": "kebab-case-id",
+      "name": "Evocative Theme Name",
+      "tagline": "Punchy 6-8 word aesthetic summary",
+      "description": "1-2 sentences explaining the visual layout, typography, borders, and mood",
+      "bestFor": "Who or what demo context this theme shines in",
+      "badge": "CURATED FOR THIS PROJECT",
+      "palette": ["#hex1", "#hex2", "#hex3", "#hex4"],
+      "themeRationale": "1-2 sentences explaining why this theme fits THIS project's problem domain and users specifically."
+    }
+  ]
+}
+
+Return strictly valid JSON with 3 creative suggestions.`,
+      });
+
+      if (res?.suggestions && res.suggestions.length > 0) {
+        return res;
+      }
+    } catch (err) {
+      console.warn("AI gateway error in suggestThemes, using smart domain heuristic fallback:", err);
+    }
+
+    return { suggestions: generateProjectThemedSuggestions(data.blueprint, data.profile) };
+  });
+
 function getLanguageFromPath(path: string): string {
   const ext = path.split(".").pop()?.toLowerCase();
   switch (ext) {
@@ -308,12 +628,25 @@ export const parseMarkdownCodeFiles = parseDelimitedCodeFiles;
 type PrototypeUiSpec = Omit<PrototypeData, "codeFiles">;
 
 export const generatePrototype = createServerFn({ method: "POST" })
-  .inputValidator((data: { profile: StudentProfile; blueprint: Blueprint }) => data)
+  .inputValidator(
+    (data: { profile: StudentProfile; blueprint: Blueprint; theme?: string }) => data,
+  )
   .handler(async ({ data }) => {
+    const themeKey = data.theme || "neo-brutalism";
+
     const uiPrompt = `${profileBlock(data.profile)}
 
 FINALIZED BLUEPRINT:
 ${JSON.stringify(data.blueprint)}
+
+SELECTED DESIGN SYSTEM & VISUAL THEME: "${themeKey.toUpperCase()}"
+Important: Style the screen titles, subtitles, field labels, action copy, and visual elements specifically to embody the "${themeKey}" aesthetic.
+- If neo-brutalism: Bold, high-contrast, energetic, punchy labels.
+- If modern-minimal: Clean, concise, elegant, polished SaaS tone.
+- If cyberpunk: High-tech, futuristic telemetry, glowing status alerts.
+- If glassmorphism: Fluid, ethereal, layered, modern visual hierarchy.
+- If warm-editorial: Thoughtful, literary, warm, craft-driven tone.
+- If enterprise-navy: Professional, data-dense, mission-critical metrics.
 
 Generate an interactive software prototype UI specification and user workflow simulation for this project blueprint.
 Focus on creating intuitive screens, realistic interactive metrics, action forms, and setup commands.
@@ -399,6 +732,9 @@ Return strictly valid JSON. Do not generate code files in this output.`;
 FINALIZED BLUEPRINT:
 ${JSON.stringify(data.blueprint)}
 
+SELECTED DESIGN SYSTEM & VISUAL THEME: "${themeKey.toUpperCase()}"
+The frontend/src/App.tsx starter component MUST strictly embody the "${themeKey}" aesthetic using relevant Tailwind CSS styling (e.g., matching border styles, color palette, surface hierarchy, and button styles).
+
 Generate a complete, high-quality, production-grade multi-file starter codebase for this engineering project.
 Write full, realistic, runnable implementations with complete logic, imports, models, and comments.
 
@@ -406,7 +742,7 @@ Format each file cleanly using this exact Markdown code fence structure:
 
 ### FILE: frontend/src/App.tsx
 \`\`\`typescript
-// Full React Component implementation with Tailwind CSS and mock state
+// Full React Component implementation styled with the "${themeKey}" aesthetic using Tailwind CSS and mock state
 \`\`\`
 
 ### FILE: backend/main.py
@@ -480,6 +816,7 @@ Provide complete, realistic code for all 5 files. Do not use placeholders or emp
         uiSpec.architectureSummary ||
         data.blueprint.overview.problemSummary ||
         "Interactive software prototype.",
+      theme: themeKey,
       screens: uiSpec.screens || [],
       codeFiles: parsedFiles,
       runInstructions:

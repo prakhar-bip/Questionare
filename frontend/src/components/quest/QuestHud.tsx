@@ -9,6 +9,7 @@ const STAGES: { key: Stage; label: string }[] = [
   { key: "ideas", label: "Project ideas" },
   { key: "feasibility", label: "Reality check" },
   { key: "blueprint", label: "Your plan" },
+  { key: "theme", label: "Theme" },
   { key: "prototype", label: "Prototype" },
 ];
 
@@ -16,10 +17,12 @@ export function QuestHud({
   stage,
   badges,
   onReset,
+  onSelectStage,
 }: {
   stage: Stage;
   badges: string[];
   onReset: () => void;
+  onSelectStage?: (stage: Stage) => void;
 }) {
   const activeIndex = STAGES.findIndex((s) => s.key === stage);
   const pct = Math.round(((activeIndex + 1) / STAGES.length) * 100);
@@ -110,22 +113,37 @@ export function QuestHud({
           {STAGES.map((s, i) => {
             const done = activeIndex > i;
             const active = activeIndex === i;
+            const isClickable = Boolean(onSelectStage);
+            const pillClasses = `flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all duration-300 ${
+              active
+                ? "border-foreground bg-accent text-accent-foreground shadow-[0_3px_0_0_var(--foreground)]"
+                : done
+                  ? "border-foreground bg-primary text-primary-foreground hover:opacity-90"
+                  : "border-border bg-sunken text-muted-foreground hover:text-foreground"
+            } ${isClickable ? "cursor-pointer" : ""}`;
+
+            const content = (
+              <>
+                <span className="grid size-4 place-items-center rounded-full bg-background/30 font-mono text-[9px]">
+                  {done ? "✓" : i + 1}
+                </span>
+                {s.label}
+              </>
+            );
+
             return (
               <li key={s.key} className="flex items-center gap-1">
-                <span
-                  className={`flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all duration-300 ${
-                    active
-                      ? "border-foreground bg-accent text-accent-foreground shadow-[0_3px_0_0_var(--foreground)]"
-                      : done
-                        ? "border-foreground bg-primary text-primary-foreground"
-                        : "border-border bg-sunken text-muted-foreground"
-                  }`}
-                >
-                  <span className="grid size-4 place-items-center rounded-full bg-background/30 font-mono text-[9px]">
-                    {done ? "✓" : i + 1}
-                  </span>
-                  {s.label}
-                </span>
+                {isClickable ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelectStage?.(s.key)}
+                    className={pillClasses}
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <span className={pillClasses}>{content}</span>
+                )}
                 {i < STAGES.length - 1 && (
                   <svg viewBox="0 0 28 8" className="h-2 w-6 text-border">
                     <line

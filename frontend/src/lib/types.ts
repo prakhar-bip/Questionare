@@ -86,6 +86,7 @@ export type Stage =
   | "ideas"
   | "feasibility"
   | "blueprint"
+  | "theme"
   | "prototype"
   | "mentor";
 
@@ -179,6 +180,7 @@ export type PrototypeData = {
   title: string;
   tagline: string;
   architectureSummary: string;
+  theme?: string;
   screens: PrototypeScreen[];
   codeFiles: PrototypeFile[];
   runInstructions: string[];
@@ -193,6 +195,7 @@ export type JourneyState = {
   feedbackLog: string[];
   feasibility: Feasibility | null;
   blueprint: Blueprint | null;
+  selectedTheme?: string;
   scroll: QuestScroll | null;
   prototype: PrototypeData | null;
   changeLog: string[];
@@ -208,6 +211,7 @@ export const emptyJourney: JourneyState = {
   feedbackLog: [],
   feasibility: null,
   blueprint: null,
+  selectedTheme: undefined,
   scroll: null,
   prototype: null,
   changeLog: [],
@@ -221,6 +225,7 @@ export const BADGES: Record<string, { label: string; hint: string }> = {
   tinkerer: { label: "Refined", hint: "Refined the ideas with your feedback" },
   realist: { label: "Checked", hint: "Ran a reality check on your project" },
   architect: { label: "Plan", hint: "Unlocked your full project plan" },
+  stylist: { label: "Theme", hint: "Crafted the visual identity of your software" },
   builder: { label: "Prototype", hint: "Manifested your interactive software prototype" },
   apprentice: { label: "Mentor", hint: "Talked things through with your mentor" },
   shipwright: { label: "Updated", hint: "Updated the plan after a mentor chat" },

@@ -12,6 +12,7 @@ import { MentorDock } from "@/components/quest/MentorDock";
 import { PlanChangeBar } from "@/components/quest/PlanChangeBar";
 import { ProfileCard } from "@/components/quest/ProfileCard";
 import { PrototypeSandbox } from "@/components/quest/PrototypeSandbox";
+import { ThemeSelection } from "@/components/quest/ThemeSelection";
 import { QuestHud } from "@/components/quest/QuestHud";
 import { QuestScrollPanel } from "@/components/quest/QuestScroll";
 import { useJourney } from "@/lib/journey";
@@ -318,15 +319,26 @@ function Home() {
     }
   }
 
+  const effectiveProfile: StudentProfile = state.profile || {
+    name: user?.fullName || "Student Developer",
+    fieldOfStudy: "Computer Science & Engineering",
+    yearOfStudy: "Final Year",
+    skills: ["Full Stack", "TypeScript", "Python"],
+    interests: ["Software Architecture", "AI Systems"],
+    ambition: "Build a production-grade software prototype",
+    weeklyHours: 15,
+    hasHardware: false,
+  };
+
   async function handleFeedback(idea: ProjectIdea, action: string) {
-    if (!state.profile) return;
+    const prof = state.profile || effectiveProfile;
     setBusy("Updating ideas from your feedback…");
     try {
       const feedback = [...state.feedbackLog, `${action} (re: ${idea.name})`];
       const ideas = await doRefineIdeas({
-        data: { profile: state.profile, idea, action, feedback: state.feedbackLog },
+        data: { profile: prof, idea, action, feedback: state.feedbackLog },
       });
-      update({ ideas, feedbackLog: feedback, selectedIdeaId: null });
+      update({ ideas, feedbackLog: feedback, selectedIdeaId: null, profile: prof });
       award(60, "tinkerer");
       toast.success("New ideas based on your feedback.");
     } catch (e) {
@@ -337,12 +349,12 @@ function Home() {
   }
 
   async function handleSelect(idea: ProjectIdea) {
-    if (!state.profile) return;
+    const prof = state.profile || effectiveProfile;
     setBusy("Running the reality check…");
     update({ selectedIdeaId: idea.id });
     try {
-      const feasibility = await doFeasibility({ data: { profile: state.profile, idea } });
-      update({ feasibility, stage: "feasibility", selectedIdeaId: idea.id });
+      const feasibility = await doFeasibility({ data: { profile: prof, idea } });
+      update({ feasibility, stage: "feasibility", selectedIdeaId: idea.id, profile: prof });
       award(150, "realist");
     } catch (e) {
       fail(e);
@@ -352,12 +364,13 @@ function Home() {
   }
 
   async function handleDirection(direction: string, label: string) {
-    if (!state.profile || !selected) return;
+    if (!selected) return;
+    const prof = state.profile || effectiveProfile;
     setBusy("Writing your full project plan…");
     try {
       const blueprint = await doBlueprint({
         data: {
-          profile: state.profile,
+          profile: prof,
           idea: selected,
           feasibility: state.feasibility,
           feedback: state.feedbackLog,
@@ -366,6 +379,7 @@ function Home() {
       });
       update({
         blueprint,
+        profile: prof,
         stage: "blueprint",
         feedbackLog: [...state.feedbackLog, `chose the ${label} direction`],
       });
@@ -378,13 +392,14 @@ function Home() {
   }
 
   async function handleSummon() {
-    if (!state.profile || !state.blueprint) return;
+    if (!state.blueprint) return;
+    const prof = state.profile || effectiveProfile;
     setScrollBusy(true);
     try {
       const scroll = await doSummarize({
-        data: { profile: state.profile, blueprint: state.blueprint },
+        data: { profile: prof, blueprint: state.blueprint },
       });
-      update({ scroll });
+      update({ scroll, profile: prof });
       award(80, "loremaster");
     } catch (e) {
       fail(e);
@@ -399,14 +414,16 @@ function Home() {
   }
 
   async function handleApply(request: string) {
-    if (!state.profile || !state.blueprint || applying) return;
+    if (!state.blueprint || applying) return;
+    const prof = state.profile || effectiveProfile;
     setApplying(true);
     try {
       const res = await doUpdateBlueprint({
-        data: { profile: state.profile, blueprint: state.blueprint, request },
+        data: { profile: prof, blueprint: state.blueprint, request },
       });
       update({
         blueprint: res.blueprint,
+        profile: prof,
         scroll: null,
         changeLog: [...state.changeLog, res.changeSummary],
       });
@@ -419,25 +436,93 @@ function Home() {
     }
   }
 
-  async function handleGeneratePrototype() {
-    if (!state.profile || !state.blueprint) return;
-    setBusy("Manifesting your software prototype and codebase with Sarthi AI...");
+  async function handleGeneratePrototype(selectedTheme?: string) {
+    if (!state.blueprint) {
+      toast.error("Please create a blueprint first before generating a prototype.");
+      return;
+    }
+    const theme = selectedTheme || state.selectedTheme || "neo-brutalism";
+    setBusy(`Manifesting your ${theme} software prototype & codebase with Sarthi AI...`);
     try {
       const prototype = await doGeneratePrototype({
-        data: { profile: state.profile, blueprint: state.blueprint },
+        data: { profile: effectiveProfile, blueprint: state.blueprint, theme },
       });
       update({
         prototype,
+        profile: effectiveProfile,
+        selectedTheme: theme,
         stage: "prototype",
       });
       award(350, "builder");
-      toast.success("Interactive prototype & starter codebase ready!");
+      toast.success(`Interactive prototype in ${theme} style ready!`);
     } catch (e) {
       fail(e);
     } finally {
       setBusy(null);
     }
   }
+
+  const handleStageNavigation = (targetStage: any) => {
+    if (targetStage === state.stage) return;
+    if (targetStage === "discovery") {
+      update({ stage: "discovery" });
+      return;
+    }
+    if (targetStage === "profile") {
+      if (!state.profile) {
+        toast.info("Please complete the project discovery questions first.");
+        return;
+      }
+      update({ stage: "profile" });
+      return;
+    }
+    if (targetStage === "ideas") {
+      if (!state.ideas || state.ideas.length === 0) {
+        toast.info("Please complete discovery to generate your tailored project ideas.");
+        return;
+      }
+      update({ stage: "ideas" });
+      return;
+    }
+    if (targetStage === "feasibility") {
+      if (!state.feasibility) {
+        toast.info("Please choose a project idea first to run the reality check.");
+        return;
+      }
+      update({ stage: "feasibility" });
+      return;
+    }
+    if (targetStage === "blueprint") {
+      if (!state.blueprint) {
+        toast.info("Please complete the reality check first to build your blueprint.");
+        return;
+      }
+      update({ stage: "blueprint" });
+      return;
+    }
+    if (targetStage === "theme") {
+      if (!state.blueprint) {
+        toast.info("Please create your blueprint before choosing a theme.");
+        return;
+      }
+      update({ stage: "theme" });
+      return;
+    }
+    if (targetStage === "prototype") {
+      if (!state.prototype) {
+        if (state.blueprint) {
+          update({ stage: "theme" });
+          toast.info("Select a design theme first to generate your prototype.");
+        } else {
+          toast.info("Please create your project blueprint first.");
+        }
+        return;
+      }
+      update({ stage: "prototype" });
+      return;
+    }
+    update({ stage: targetStage });
+  };
 
   if (!hydrated) return null;
 
@@ -449,7 +534,12 @@ function Home() {
       {!showQuest && <LandingNavbar onOpenAuth={openAuth} />}
 
       {showQuest && (
-        <QuestHud stage={state.stage} badges={state.badges} onReset={reset} />
+        <QuestHud
+          stage={state.stage}
+          badges={state.badges}
+          onReset={reset}
+          onSelectStage={handleStageNavigation}
+        />
       )}
 
       <main className="mx-auto max-w-6xl px-5 py-8">
@@ -524,7 +614,7 @@ function Home() {
           />
         )}
 
-        {showQuest && !busy && state.stage === "blueprint" && state.blueprint && state.profile && (
+        {showQuest && !busy && state.stage === "blueprint" && state.blueprint && (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -541,11 +631,37 @@ function Home() {
             <BlueprintView
               b={state.blueprint}
               changeLog={state.changeLog}
-              onGeneratePrototype={() => void handleGeneratePrototype()}
+              onGeneratePrototype={() => update({ stage: "theme" })}
               isGeneratingPrototype={Boolean(busy)}
             />
             <MentorDock
-              profile={state.profile}
+              profile={state.profile || effectiveProfile}
+              blueprint={state.blueprint}
+              askSeed={askSeed}
+              open={dockOpen}
+              onToggle={setDockOpen}
+              onAsked={() => award(40, "apprentice")}
+            />
+          </div>
+        )}
+
+        {showQuest && !busy && state.stage === "theme" && state.blueprint && (
+          <div className="space-y-6">
+            <ThemeSelection
+              blueprint={state.blueprint}
+              profile={state.profile || effectiveProfile}
+              onSelectTheme={(theme) => {
+                award(100, "stylist");
+                void handleGeneratePrototype(theme);
+              }}
+              onBack={() => {
+                setBusy(null);
+                update({ stage: "blueprint" });
+              }}
+              isGenerating={Boolean(busy)}
+            />
+            <MentorDock
+              profile={state.profile || effectiveProfile}
               blueprint={state.blueprint}
               askSeed={askSeed}
               open={dockOpen}
@@ -560,11 +676,18 @@ function Home() {
             <PrototypeSandbox
               prototype={state.prototype}
               blueprint={state.blueprint}
-              profile={state.profile}
-              onBackToBlueprint={() => update({ stage: "blueprint" })}
+              profile={state.profile || effectiveProfile}
+              onBackToBlueprint={() => {
+                setBusy(null);
+                update({ stage: "blueprint" });
+              }}
+              onSelectNewTheme={() => {
+                setBusy(null);
+                update({ stage: "theme" });
+              }}
             />
             <MentorDock
-              profile={state.profile}
+              profile={state.profile || effectiveProfile}
               blueprint={state.blueprint}
               askSeed={askSeed}
               open={dockOpen}
@@ -575,7 +698,7 @@ function Home() {
         )}
 
 
-        {showQuest && !busy && state.stage === "mentor" && state.blueprint && state.profile && (
+        {showQuest && !busy && state.stage === "mentor" && state.blueprint && (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,440px)_1fr]">
             <div className="order-2 space-y-6 lg:order-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -595,11 +718,16 @@ function Home() {
                 onSummon={() => void handleSummon()}
                 onAsk={ask}
               />
-              <BlueprintView b={state.blueprint} changeLog={state.changeLog} />
+              <BlueprintView
+                b={state.blueprint}
+                changeLog={state.changeLog}
+                onGeneratePrototype={() => update({ stage: "theme" })}
+                isGeneratingPrototype={Boolean(busy)}
+              />
             </div>
             <div className="order-1 lg:order-2 lg:sticky lg:top-36 lg:h-fit">
               <Mentor
-                profile={state.profile}
+                profile={state.profile || effectiveProfile}
                 blueprint={state.blueprint}
                 askSeed={askSeed}
                 onAsked={() => award(40, "apprentice")}
