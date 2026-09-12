@@ -6,8 +6,11 @@ from app.db.database import engine, Base
 from app.models import student, project, user
 from fastapi.middleware.cors import CORSMiddleware
 
-# Create DB tables (In production, use Alembic)
-Base.metadata.create_all(bind=engine)
+# Create DB tables safely
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as exc:
+    print(f"Database initialization notice: {exc}")
 
 # Print terminal log header once on startup
 print_log_header()
