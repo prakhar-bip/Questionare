@@ -28,7 +28,7 @@ class ChatRequest(BaseModel):
 @router.post("/generate-json")
 def gateway_generate_json(req: GenerateJsonRequest):
     """
-    Direct JSON generation bridge for frontend server functions using Vertex AI Gemini Pro.
+    Direct JSON generation bridge for frontend server functions using zero-cost Nvidia NIM.
     """
     try:
         data = generate_raw_json(
@@ -38,12 +38,12 @@ def gateway_generate_json(req: GenerateJsonRequest):
         )
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Vertex AI JSON generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"JSON generation failed: {str(e)}")
 
 @router.post("/generate-text")
 def gateway_generate_text(req: GenerateTextRequest):
     """
-    Direct code and text generation bridge for frontend server functions using Vertex AI Gemini Pro.
+    Direct code and text generation bridge for frontend server functions using zero-cost Nvidia NIM.
     Ideal for source code files, documentation, and markdown artifacts with zero JSON escaping friction.
     """
     try:
@@ -56,12 +56,12 @@ def gateway_generate_text(req: GenerateTextRequest):
         )
         return {"text": text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Vertex AI text generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Text generation failed: {str(e)}")
 
 @router.post("/chat")
 def gateway_chat(req: ChatRequest):
     """
-    Direct mentor chat response using Vertex AI Gemini Pro.
+    Direct mentor chat response using zero-cost Nvidia NIM.
     """
     try:
         system = (
@@ -87,4 +87,4 @@ def gateway_chat(req: ChatRequest):
         text = call_llm(prompt=last_msg, system_instruction=system, temperature=0.6, max_tokens=1024, agent_name="Sarthi Direct Chat Mentor Agent")
         return {"text": text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Vertex AI chat failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Mentor chat failed: {str(e)}")

@@ -2,11 +2,7 @@ import type { AuthUser } from "./types";
 
 function getBackendBaseUrl(): string {
   if (typeof window !== "undefined") {
-    // Check if localhost
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return "http://127.0.0.1:8000";
-    }
-    return "https://sarthi-backend-526912959525.us-central1.run.app";
+    return (window as any).__BACKEND_URL__ || "http://127.0.0.1:8000";
   }
   return process.env["BACKEND_URL"] || "http://127.0.0.1:8000";
 }

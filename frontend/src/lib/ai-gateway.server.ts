@@ -1,4 +1,4 @@
-export const MODEL_ID = "google/gemini-2.5-pro";
+export const MODEL_ID = "nvidia/nemotron-3-ultra-550b-a55b";
 
 export function requireApiKey() {
   return "configured";
@@ -27,14 +27,12 @@ function getBackendCandidates(): string[] {
     candidates.push(process.env["BACKEND_URL"].replace(/\/+$/, ""));
   }
   candidates.push("http://127.0.0.1:8000");
-  candidates.push("https://sarthi-backend-526912959525.us-central1.run.app");
-  candidates.push("https://questline-backend-526912959525.us-central1.run.app");
   return Array.from(new Set(candidates));
 }
 
 /**
- * Calls our FastAPI backend which is powered by Google Cloud Vertex AI (Gemini Pro)
- * and Supabase persistence.
+ * Calls our FastAPI backend which is powered by zero-cost Nvidia NIM AI (nemotron-3-ultra-550b-a55b).
+ * Completely severed from GCP / Vertex AI to prevent any cloud billing charges.
  */
 export async function generateJson<T>(opts: {
   system: string;

@@ -4,22 +4,14 @@
 
 **Sarthi** is an AI-powered platform designed to guide final-year university students through discovering, evaluating, refining, and architecting practical final-year engineering projects tailored to their skills, interests, time constraints, and career goals.
 
-Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (Supabase)**, and a modern **React/TanStack** frontend.
+Powered by **Nvidia NIM AI**, **FastAPI**, **PostgreSQL**, and a modern **React/TanStack** frontend — 100% free with zero cloud charges.
 
 ---
 
-## 🌐 Live Production Deployment Links (GCP Cloud Run)
+## 🤖 Zero-Cost AI Engine
 
-- **Live Application (Frontend)**: [https://sarthi-526912959525.us-central1.run.app](https://sarthi-526912959525.us-central1.run.app)
-- **Live REST API & Swagger Docs (Backend)**: [https://sarthi-backend-526912959525.us-central1.run.app/docs](https://sarthi-backend-526912959525.us-central1.run.app/docs)
-- **GitHub Repository**: [https://github.com/prakhar-bip/Questionare](https://github.com/prakhar-bip/Questionare)
-
----
-
-## 🤖 Dual-Mode LLM Engine
-
-- **Production Mode (`ENVIRONMENT=production`)**: Powered by **Google Cloud Vertex AI (`gemini-2.5-pro` as Primary, `gemini-2.5-flash` as Secondary)** for maximum reasoning depth, architectural blueprints, and student mentorship.
-- **Development & Fallback Engine**: Powered by **Nvidia NIM (`nemotron-3-ultra-550b-a55b`)** with multi-tier failover for rapid prototyping and high-throughput iteration.
+- **AI Engine**: Powered 100% by **Nvidia NIM (`nvidia/nemotron-3-ultra-550b-a55b`)** with zero cloud billing and zero GCP dependencies.
+- **Local & Self-Hosted**: Runs 100% locally on your machine with zero external hosting or cloud infrastructure fees.
 
 ---
 
@@ -47,7 +39,7 @@ Powered by **Google Cloud Vertex AI (Gemini Pro)**, **FastAPI**, **PostgreSQL (S
 
 ## 🛠️ Technology Stack
 
-- **AI Engine**: Google Cloud Vertex AI (`gemini-2.5-pro` / `gemini-3.1-pro`) with automatic failover to Nvidia NIM (`nemotron-3-ultra-550b-a55b`).
+- **AI Engine**: Nvidia NIM (`nvidia/nemotron-3-ultra-550b-a55b`) — Free tier, zero cloud charges.
 - **Backend API**: Python 3.12+, FastAPI, SQLAlchemy, Pydantic v2.
 - **Database**: PostgreSQL (Supabase Cloud).
 - **Frontend**: React 19, TypeScript, TanStack Start & Router, Tailwind CSS, Lucide Icons.

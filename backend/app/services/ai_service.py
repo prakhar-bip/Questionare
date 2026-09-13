@@ -6,132 +6,17 @@ from openai import OpenAI
 from app.core.config import settings
 from app.core.activity_logger import log_activity
 
-# Initialize OpenAI client to connect to Nvidia API as fallback
+# Initialize OpenAI client to connect to Nvidia API (100% Free Tier, Zero GCP)
 client = OpenAI(
-    api_key=settings.NVIDIA_API_KEY,
+    api_key=settings.NVIDIA_API_KEY or "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",
     base_url=settings.NVIDIA_BASE_URL
 )
 
-_gcloud_token = None
-_token_expiry = 0
-_unavailable_models: dict[str, float] = {}  # {model_name: timestamp_when_404_received}
-
 def get_vertex_token():
-    global _gcloud_token, _token_expiry
-    now = time.time()
-    if not _gcloud_token or now > _token_expiry:
-        # Standard GCP Cloud Run runtime auth
-        try:
-            import google.auth
-            import google.auth.transport.requests
-            creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-            auth_req = google.auth.transport.requests.Request()
-            creds.refresh(auth_req)
-            if creds.token:
-                _gcloud_token = creds.token
-                _token_expiry = now + 3000
-                return _gcloud_token
-        except Exception:
-            pass
-
-        # Local development gcloud CLI fallback
-        try:
-            res = subprocess.run(
-                "gcloud auth print-access-token",
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=15
-            )
-            token = res.stdout.strip()
-            if token and not token.startswith("ERROR"):
-                _gcloud_token = token
-                _token_expiry = now + 3000
-                return _gcloud_token
-        except Exception as e:
-            print(f"Error fetching gcloud token: {e}")
-    return _gcloud_token
+    return None
 
 def call_vertex_gemini(prompt: str, system_instruction: str = None, temperature: float = 0.4, max_tokens: int = 8192):
-    global _unavailable_models
-    token = get_vertex_token()
-    if not token:
-        raise RuntimeError("No Google Cloud access token available. Make sure gcloud is authenticated.")
-        
-    primary_model = settings.GCP_PRIMARY_MODEL
-    secondary_model = settings.GCP_SECONDARY_MODEL
-    
-    # Request timeout: allocate ample time for multi-file codebases (180s+ for up to 8192 tokens)
-    request_timeout = max(180, int(max_tokens / 30))
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }
-        ],
-        "generationConfig": {
-            "temperature": temperature,
-            "maxOutputTokens": max_tokens
-        }
-    }
-    if system_instruction:
-        payload["systemInstruction"] = {
-            "parts": [{"text": system_instruction}]
-        }
-
-    now = time.time()
-    last_err = None
-
-    # 1. Attempt Primary Model (Gemini 3.1 Pro) if not cached as unavailable
-    skip_primary = (
-        primary_model in _unavailable_models
-        and (now - _unavailable_models[primary_model]) < 3600
-    )
-
-    if not skip_primary:
-        primary_url = f"https://{settings.GCP_LOCATION}-aiplatform.googleapis.com/v1/projects/{settings.GCP_PROJECT_ID}/locations/{settings.GCP_LOCATION}/publishers/google/models/{primary_model}:generateContent"
-        try:
-            res = requests.post(primary_url, headers=headers, json=payload, timeout=request_timeout)
-            if res.status_code == 200:
-                data = res.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    return "".join(p.get("text", "") for p in parts), primary_model
-            elif res.status_code == 404:
-                _unavailable_models[primary_model] = now
-                last_err = f"Primary {primary_model} returned 404 on Vertex AI (cached for 1h)"
-            else:
-                last_err = f"Primary {primary_model} returned HTTP {res.status_code}: {res.text[:150]}"
-        except Exception as e:
-            last_err = f"Primary {primary_model} error: {str(e)}"
-    else:
-        last_err = f"Primary {primary_model} cached as unavailable on Vertex AI"
-
-    # 2. Attempt Secondary Fallback Model (Gemini 2.5 Pro)
-    if secondary_model and secondary_model != primary_model:
-        try:
-            secondary_url = f"https://{settings.GCP_LOCATION}-aiplatform.googleapis.com/v1/projects/{settings.GCP_PROJECT_ID}/locations/{settings.GCP_LOCATION}/publishers/google/models/{secondary_model}:generateContent"
-            res = requests.post(secondary_url, headers=headers, json=payload, timeout=request_timeout)
-            if res.status_code == 200:
-                data = res.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    return "".join(p.get("text", "") for p in parts), secondary_model
-            else:
-                raise RuntimeError(f"Secondary {secondary_model} returned HTTP {res.status_code}: {res.text[:150]}")
-        except Exception as e_sec:
-            raise RuntimeError(f"Vertex AI failed. Primary ({last_err}), Secondary error: {str(e_sec)}")
-
-    raise RuntimeError(f"Vertex AI error: {last_err}")
-
+    raise RuntimeError("Google Cloud Vertex AI is permanently disabled to prevent GCP billing charges.")
 
 def call_nvidia(prompt: str, system_instruction: str = None, temperature: float = 0.4, max_tokens: int = 4096):
     messages = []
@@ -154,82 +39,28 @@ def call_llm(
     agent_name: str = "Sarthi AI Agent"
 ):
     """
-    LLM Router:
-    - Primary Model: Google Cloud Vertex AI Gemini 3.1 Pro (settings.GCP_PRIMARY_MODEL)
-    - Secondary Model: Google Cloud Vertex AI Gemini 2.5 Pro (settings.GCP_SECONDARY_MODEL)
-    - Fallback: Nvidia NIM model (settings.NVIDIA_MODEL)
-    - Logs every activity strictly to terminal in the format:
-      date,time,ai agent that used to generate response,success,error,warning message reason for error and warning
+    Zero-Cost LLM Router:
+    - Powered 100% by Nvidia NIM Free Tier (settings.NVIDIA_MODEL)
+    - Google Cloud Vertex AI is completely disabled (Zero GCP charges)
     """
-    use_vertex = settings.USE_VERTEX_AI or settings.ENVIRONMENT.lower() == "production"
-
-    if use_vertex:
-        # Primary & Secondary: Vertex AI
-        try:
-            res, model_used = call_vertex_gemini(prompt, system_instruction, temperature, max_tokens)
-            warning_reason = None
-            if model_used != settings.GCP_PRIMARY_MODEL:
-                warning_reason = f"Notice: Primary {settings.GCP_PRIMARY_MODEL} routed to secondary {model_used}"
-            log_activity(
-                agent=f"{agent_name} (Vertex AI: {model_used})",
-                success=True,
-                error=None,
-                warning_reason=warning_reason
-            )
-            return res
-        except Exception as e_vertex:
-            vertex_err = str(e_vertex)
-            # Falling back to Nvidia NIM
-            try:
-                res = call_nvidia(prompt, system_instruction, temperature, max_tokens)
-                log_activity(
-                    agent=f"{agent_name} (Nvidia NIM: {settings.NVIDIA_MODEL})",
-                    success=True,
-                    error=None,
-                    warning_reason=f"Warning: Vertex AI failed ({vertex_err}); fallback to Nvidia NIM succeeded"
-                )
-                return res
-            except Exception as e_nvidia:
-                nvidia_err = str(e_nvidia)
-                log_activity(
-                    agent=f"{agent_name} (Vertex AI & Nvidia NIM)",
-                    success=False,
-                    error=f"{type(e_nvidia).__name__}: {nvidia_err}",
-                    warning_reason=f"Reason: Vertex AI failed ({vertex_err}); fallback Nvidia NIM failed ({nvidia_err})"
-                )
-                raise RuntimeError(f"All AI providers failed. Vertex AI: {vertex_err}. Nvidia: {nvidia_err}")
-    else:
-        # Development fallback: Nvidia NIM model
-        try:
-            res = call_nvidia(prompt, system_instruction, temperature, max_tokens)
-            log_activity(
-                agent=f"{agent_name} (Nvidia NIM: {settings.NVIDIA_MODEL})",
-                success=True,
-                error=None,
-                warning_reason=None
-            )
-            return res
-        except Exception as e_nvidia:
-            nvidia_err = str(e_nvidia)
-            # Falling back to Vertex AI
-            try:
-                res, model_used = call_vertex_gemini(prompt, system_instruction, temperature, max_tokens)
-                log_activity(
-                    agent=f"{agent_name} (Vertex AI: {model_used})",
-                    success=True,
-                    error=None,
-                    warning_reason=f"Warning: Primary Nvidia NIM failed ({nvidia_err}); fallback to Vertex AI succeeded"
-                )
-                return res
-            except Exception as e_vertex:
-                vertex_err = str(e_vertex)
-                log_activity(
-                    agent=f"{agent_name} (Nvidia NIM & Vertex AI)",
-                    success=False,
-                    error=f"{type(e_vertex).__name__}: {vertex_err}",
-                    warning_reason=f"Reason: Primary Nvidia NIM failed ({nvidia_err}); fallback Vertex AI failed ({vertex_err})"
-                )
-                raise RuntimeError(f"All AI providers failed. Nvidia: {nvidia_err}. Vertex AI: {vertex_err}")
+    try:
+        res = call_nvidia(prompt, system_instruction, temperature, max_tokens)
+        log_activity(
+            agent=f"{agent_name} (Nvidia NIM: {settings.NVIDIA_MODEL})",
+            success=True,
+            error=None,
+            warning_reason=None
+        )
+        return res
+    except Exception as e_nvidia:
+        nvidia_err = str(e_nvidia)
+        log_activity(
+            agent=f"{agent_name} (Nvidia NIM)",
+            success=False,
+            error=f"{type(e_nvidia).__name__}: {nvidia_err}",
+            warning_reason=f"Reason: Nvidia NIM generation failed ({nvidia_err})"
+        )
+        raise RuntimeError(f"AI generation failed: {nvidia_err}")
 
 
 def _repair_and_parse_json(text: str):

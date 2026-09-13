@@ -13,19 +13,19 @@ class Settings(BaseSettings):
     
     SQLALCHEMY_DATABASE_URI: str = os.getenv("SQLALCHEMY_DATABASE_URI", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
     
-    # Environment mode: 'production' uses Gemini 2.5 Pro on Vertex AI; 'development' uses Nvidia model
+    # Environment mode: 'development' / 'production' powered 100% by zero-cost Nvidia NIM API
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
-    # Google Cloud Vertex AI settings
-    USE_VERTEX_AI: bool = os.getenv("USE_VERTEX_AI", "true").lower() in ("true", "1", "yes")
-    GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "project-e3e4dcb5-593d-4e61-9a8")
-    GCP_LOCATION: str = os.getenv("GCP_LOCATION", "us-central1")
-    GCP_PRIMARY_MODEL: str = os.getenv("GCP_PRIMARY_MODEL", "gemini-2.5-pro")
-    GCP_SECONDARY_MODEL: str = os.getenv("GCP_SECONDARY_MODEL", "gemini-2.5-flash")
-    GCP_MODEL: str = os.getenv("GCP_MODEL", GCP_PRIMARY_MODEL)
+    # Google Cloud Vertex AI settings (PERMANENTLY DISABLED to prevent GCP charges)
+    USE_VERTEX_AI: bool = False
+    GCP_PROJECT_ID: str = ""
+    GCP_LOCATION: str = ""
+    GCP_PRIMARY_MODEL: str = ""
+    GCP_SECONDARY_MODEL: str = ""
+    GCP_MODEL: str = ""
 
-    # Nvidia AI settings (Development LLM)
-    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "")
+    # Nvidia AI settings (Zero-Cost Free Tier LLM)
+    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "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")
     NVIDIA_BASE_URL: str = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
     NVIDIA_MODEL: str = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b")
 
