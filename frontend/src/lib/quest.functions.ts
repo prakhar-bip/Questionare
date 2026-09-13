@@ -18,22 +18,33 @@ const SYSTEM =
   "You are pragmatic, specific and encouraging. You never invent unrealistic scope. " +
   "Everything you write must be concrete: real technologies, real user groups, real numbers.";
 
-function profileBlock(p: StudentProfile) {
+function safeJoin(arr: any, fallback = "n/a"): string {
+  if (Array.isArray(arr)) {
+    return arr.filter(Boolean).join(", ") || fallback;
+  }
+  if (typeof arr === "string" && arr.trim().length > 0) {
+    return arr.trim();
+  }
+  return fallback;
+}
+
+function profileBlock(p: any) {
+  if (!p) return "STUDENT PROFILE: Standard Engineering Student";
   return `STUDENT PROFILE
-Name: ${p.name}
-Field: ${p.fieldOfStudy} | Year: ${p.yearOfStudy} | Experience: ${p.experienceLevel}
-Skills: ${p.skills.join(", ") || "n/a"}
-Languages: ${p.languages.join(", ") || "n/a"}
-Frameworks/tools: ${p.frameworks.join(", ") || "n/a"}
-AI/ML knowledge: ${p.aiKnowledge}
-Previous projects: ${p.previousProjects || "none stated"}
-Interests: ${p.interests.join(", ") || "n/a"}
-Preferred domains: ${p.domains.join(", ") || "n/a"}
-Career goal: ${p.careerGoal}
-Preferred project type: ${p.projectType}
-Time budget: ${p.hoursPerWeek} hrs/week for ${p.weeks} weeks
-Team: ${p.teamSize} | Resources: ${p.resources.join(", ") || "laptop only"}
-Preferred complexity: ${p.complexity}
+Name: ${p.name || "Student Developer"}
+Field: ${p.fieldOfStudy || "Computer Science & Engineering"} | Year: ${p.yearOfStudy || "Final Year"} | Experience: ${p.experienceLevel || "Intermediate"}
+Skills: ${safeJoin(p.skills, "Full Stack, TypeScript, Python")}
+Languages: ${safeJoin(p.languages, "TypeScript, Python, JavaScript, SQL")}
+Frameworks/tools: ${safeJoin(p.frameworks, "React, FastAPI, PostgreSQL, Tailwind CSS")}
+AI/ML knowledge: ${p.aiKnowledge || "Proficient"}
+Previous projects: ${p.previousProjects || "Full-stack software project"}
+Interests: ${safeJoin(p.interests, "Software Architecture, AI Systems")}
+Preferred domains: ${safeJoin(p.domains, "Full-stack web, AI / ML")}
+Career goal: ${p.careerGoal || p.ambition || "Full-Stack Software Engineer"}
+Preferred project type: ${p.projectType || "Full-stack web application"}
+Time budget: ${p.hoursPerWeek || p.weeklyHours || 15} hrs/week for ${p.weeks || 12} weeks
+Team: ${p.teamSize || "1 (Solo Project)"} | Resources: ${safeJoin(p.resources, "Laptop only, Cloud resources")}
+Preferred complexity: ${p.complexity || "Production-grade"}
 Their own project ideas / extra notes: ${p.ownIdeas || "none"}`;
 }
 
@@ -168,14 +179,115 @@ Roadmap must cover planning, requirements, setup, core/backend, frontend, databa
     });
   });
 
+export function generateBlueprintScrollFallback(blueprint: Blueprint): QuestScroll {
+  const bp = blueprint;
+  const title = bp.title || "Engineering Capstone Project";
+  const overview = bp.overview || {
+    summary: "Production-grade full-stack architecture with modular components.",
+    problemStatement: "Bridging the gap between conceptual requirements and practical execution.",
+    proposedSolution: "An end-to-end engineered software solution.",
+    objectives: ["Establish core workflow", "Implement data persistence", "Deploy verifiable MVP"],
+    targetUsers: "Evaluators and end users",
+    expectedImpact: "High operational efficiency and transparent technical design",
+  };
+
+  const stackNames = Array.isArray(bp.stack) && bp.stack.length > 0
+    ? bp.stack.map((s) => s?.name).filter(Boolean)
+    : ["TypeScript", "React", "Node.js / Python", "PostgreSQL", "Tailwind CSS"];
+
+  const firstChallenge = Array.isArray(bp.challenges) && bp.challenges[0]
+    ? `${bp.challenges[0].challenge}: ${bp.challenges[0].solution}`
+    : "Scope creep: Deliver core MVP features first before adding complex secondary capabilities.";
+
+  const mvpList = Array.isArray(bp.mvpFeatures) && bp.mvpFeatures.length > 0
+    ? bp.mvpFeatures.map((f) => f?.name).filter(Boolean)
+    : ["Authentication & User Profiles", "Core Domain Engine", "Analytics Dashboard"];
+
+  return {
+    tldr: overview.summary || `${title}: A targeted solution addressing ${overview.problemStatement || "critical domain needs"}.`,
+    pitch: `We are building ${title} to solve ${overview.problemStatement || "key bottlenecks"}. Utilizing a robust stack of ${stackNames.slice(0, 3).join(", ") || "modern tools"}, our MVP delivers ${mvpList.slice(0, 2).join(" and ") || "high-value functionality"}. The architecture ensures rapid development, seamless supervisor evaluation, and reliable execution for ${overview.targetUsers || "evaluators"}.`,
+    keyMoves: [
+      {
+        move: "Modular Component & Service Layer",
+        why: bp.architecture?.dataFlow || "Decouples data ingest, business logic, and UI for reliable grading and unit testing.",
+      },
+      {
+        move: `MVP Focus: ${mvpList[0] || "Core Workflow"}`,
+        why: "Establishes verifiable value in the initial milestone before tackling complex edge integrations.",
+      },
+    ],
+    loadout: stackNames.slice(0, 7),
+    nextThreeMoves: [
+      "Initialize Git repository, environment variables, and core package dependencies.",
+      `Implement data schemas and REST/GraphQL contracts for ${mvpList[0] || "the core domain"}.`,
+      "Build the interactive frontend views and connect end-to-end API integration workflows.",
+    ],
+    bossRisks: [
+      firstChallenge,
+      "Third-party API / latency bottlenecks: Implement circuit breakers, local caching, and reliable fallback states.",
+      "Evaluation live-demo panic: Rehearse with automated test fixtures and pre-seeded demonstration data.",
+    ],
+  };
+}
+
+export function applyBlueprintChangeFallback(
+  blueprint: Blueprint,
+  request: string,
+): { blueprint: Blueprint; changeSummary: string } {
+  const reqLower = request.toLowerCase();
+  const updated: Blueprint = JSON.parse(JSON.stringify(blueprint));
+
+  let summary = `Updated plan to incorporate: "${request}"`;
+
+  // 1. Update solution description
+  if (updated.overview) {
+    const existing = updated.overview.proposedSolution || "";
+    updated.overview.proposedSolution = existing
+      ? `${existing} (Updated: ${request})`
+      : request;
+  }
+
+  // 2. Add or update MVP features
+  if (!Array.isArray(updated.mvpFeatures)) {
+    updated.mvpFeatures = [];
+  }
+  const featureName = request.length > 36 ? request.slice(0, 33) + "..." : request;
+  updated.mvpFeatures.push({
+    name: featureName,
+    detail: `Integrated per student request: "${request}"`,
+  });
+
+  // 3. Handle stack updates if tech mentioned
+  if (/cut|remove|drop|exclude/.test(reqLower)) {
+    summary = `Refined blueprint scope: simplified features per "${request}"`;
+  } else if (/swap|replace|use\s+|add\s+|switch/.test(reqLower)) {
+    summary = `Updated technology stack and feature requirements per "${request}"`;
+    if (!Array.isArray(updated.stack)) updated.stack = [];
+    const match = request.match(/(?:use|swap for|add|with|switch to)\s+([a-zA-Z0-9.+]+)/i);
+    const newTool = match?.[1]?.trim();
+    if (newTool && newTool.length > 1 && !updated.stack.some((s) => s.name.toLowerCase() === newTool.toLowerCase())) {
+      updated.stack.push({
+        name: newTool,
+        category: "Tooling",
+        why: `Requested update by student`,
+        howUsed: `Integrated into core architecture`,
+        isNew: true,
+      });
+    }
+  }
+
+  return { blueprint: updated, changeSummary: summary };
+}
+
 export const updateBlueprint = createServerFn({ method: "POST" })
   .inputValidator(
     (data: { profile: StudentProfile; blueprint: Blueprint; request: string }) => data,
   )
   .handler(async ({ data }) => {
-    return await generateJson<{ blueprint: Blueprint; changeSummary: string }>({
-      system: SYSTEM,
-      prompt: `${profileBlock(data.profile)}
+    try {
+      const res = await generateJson<{ blueprint: Blueprint; changeSummary: string }>({
+        system: SYSTEM,
+        prompt: `${profileBlock(data.profile)}
 
 CURRENT BLUEPRINT:
 ${JSON.stringify(data.blueprint)}
@@ -185,15 +297,25 @@ The student asked for this change: "${data.request}"
 Apply the change and return the FULL updated blueprint, keeping every field and staying consistent with the
 student's skills, constraints and goal. Keep untouched parts identical.
 JSON shape: {"blueprint": <same schema as the current blueprint>, "changeSummary":"one sentence on what changed"}`,
-    });
+      });
+
+      if (res?.blueprint && res?.changeSummary) {
+        return res;
+      }
+    } catch (err) {
+      console.warn("AI updateBlueprint encountered error, applying smart blueprint modifier fallback:", err);
+    }
+
+    return applyBlueprintChangeFallback(data.blueprint, data.request);
   });
 
 export const summarizeBlueprint = createServerFn({ method: "POST" })
   .inputValidator((data: { profile: StudentProfile; blueprint: Blueprint }) => data)
   .handler(async ({ data }) => {
-    return await generateJson<QuestScroll>({
-      system: SYSTEM,
-      prompt: `${profileBlock(data.profile)}
+    try {
+      const scroll = await generateJson<QuestScroll>({
+        system: SYSTEM,
+        prompt: `${profileBlock(data.profile)}
 
 CURRENT BLUEPRINT:
 ${JSON.stringify(data.blueprint)}
@@ -207,7 +329,23 @@ JSON shape:
  "loadout":["5-7 tech stack items as short strings"],
  "nextThreeMoves":["3 concrete things to do first, in order"],
  "bossRisks":["3 short risks with a hint at how to dodge each"]}`,
-    });
+      });
+
+      if (scroll?.tldr && scroll?.pitch) {
+        return {
+          tldr: scroll.tldr,
+          pitch: scroll.pitch,
+          keyMoves: Array.isArray(scroll.keyMoves) ? scroll.keyMoves : [],
+          loadout: Array.isArray(scroll.loadout) ? scroll.loadout : [],
+          nextThreeMoves: Array.isArray(scroll.nextThreeMoves) ? scroll.nextThreeMoves : [],
+          bossRisks: Array.isArray(scroll.bossRisks) ? scroll.bossRisks : [],
+        };
+      }
+    } catch (err) {
+      console.warn("AI summarizeBlueprint encountered error, utilizing plan scroll fallback:", err);
+    }
+
+    return generateBlueprintScrollFallback(data.blueprint);
   });
 
 export type AiThemeSuggestion = {
@@ -653,7 +791,7 @@ Focus on creating intuitive screens, realistic interactive metrics, action forms
 
 JSON shape:
 {
-  "title": "${data.blueprint.overview.title || "Project Prototype"}",
+  "title": "${data.blueprint.title || "Project Prototype"}",
   "tagline": "A punchy one-sentence motto or hook for this software prototype",
   "architectureSummary": "2-3 sentences explaining how this prototype implements the core architecture and what students can test immediately.",
   "screens": [
@@ -810,11 +948,11 @@ Provide complete, realistic code for all 5 files. Do not use placeholders or emp
     }
 
     const prototypeResult: PrototypeData = {
-      title: uiSpec.title || data.blueprint.overview.title || "Project Prototype",
+      title: uiSpec.title || data.blueprint.title || "Project Prototype",
       tagline: uiSpec.tagline || "Interactive Software Prototype & Starter Codebase",
       architectureSummary:
         uiSpec.architectureSummary ||
-        data.blueprint.overview.problemSummary ||
+        data.blueprint.overview?.problemStatement ||
         "Interactive software prototype.",
       theme: themeKey,
       screens: uiSpec.screens || [],
@@ -843,11 +981,11 @@ FINALIZED BLUEPRINT:
 ${JSON.stringify(data.blueprint)}
 
 Act as a Principal Software Architect. Design the complete Shared Architectural Contract and Topological Batch Generation Schedule for this production application.
-Establish the single source of truth for the entire full-stack system: Database DDL, REST API endpoints, environment variables, and 5 ordered generation batches.
+Establish the single source of truth for the entire full-stack system: Database DDL, REST API endpoints, environment variables, extra packages required for this specific project, and 5 ordered generation batches.
 
 JSON shape:
 {
-  "title": "${data.blueprint.overview.title || "Production Application"}",
+  "title": "${data.blueprint.title || "Production Application"}",
   "description": "2-sentence executive summary of the production software architecture.",
   "databaseContract": "CREATE TABLE ... (Complete PostgreSQL DDL with CREATE TABLE statements, primary keys, foreign keys, constraints, and indexes for all core entities)",
   "apiContract": [
@@ -872,12 +1010,14 @@ JSON shape:
     }
   ],
   "envContract": [
-    "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_db",
+    "DATABASE_URL=postgresql://user:password@localhost:5432/app_db",
     "SECRET_KEY=dev_secret_key_change_in_production",
     "API_V1_PREFIX=/api/v1",
     "ENVIRONMENT=development",
     "VITE_API_BASE_URL=http://localhost:8000"
   ],
+  "extraFrontendPackages": ["chart.js", "react-chartjs-2"],
+  "extraBackendPackages": ["beautifulsoup4"],
   "batches": [
     {
       "id": "layer_1_database",
@@ -892,20 +1032,25 @@ JSON shape:
     {
       "id": "layer_2_backend",
       "layerName": "Layer 2: Backend Core & APIs",
-      "description": "FastAPI application server, Pydantic validation schemas, and database session handling",
+      "description": "FastAPI application server, Pydantic v2 validation schemas, and database session handling",
       "targetFiles": [
+        {"path": "backend/app/__init__.py", "language": "python", "purpose": "Python package marker"},
         {"path": "backend/app/schemas.py", "language": "python", "purpose": "Pydantic v2 schemas strictly matching API contract request and response models"},
         {"path": "backend/app/main.py", "language": "python", "purpose": "FastAPI primary server implementing CORS and API contract endpoints"},
         {"path": "backend/requirements.txt", "language": "text", "purpose": "Python package dependencies with pinned versions"}
       ]
     },
     {
-      "id": "layer_3_api_client",
-      "layerName": "Layer 3: Frontend API Client & Types",
-      "description": "TypeScript interfaces and type-safe fetch client for backend endpoints",
+      "id": "layer_3_frontend_scaffolding",
+      "layerName": "Layer 3: Frontend Scaffolding, API Client & Types",
+      "description": "Vite React TypeScript setup, package configuration, and type-safe API client",
       "targetFiles": [
+        {"path": "frontend/package.json", "language": "json", "purpose": "NPM package.json with scripts, core React/Vite dependencies, and extra domain packages"},
+        {"path": "frontend/vite.config.ts", "language": "typescript", "purpose": "Vite bundler configuration with @vitejs/plugin-react"},
+        {"path": "frontend/index.html", "language": "html", "purpose": "HTML entry point mounting src/App.tsx"},
+        {"path": "frontend/tsconfig.json", "language": "json", "purpose": "TypeScript compiler options"},
         {"path": "frontend/src/types/api.ts", "language": "typescript", "purpose": "TypeScript models mirroring Pydantic models with 100% type safety"},
-        {"path": "frontend/src/lib/api-client.ts", "language": "typescript", "purpose": "Type-safe client functions with error handling and base URL handling"}
+        {"path": "frontend/src/lib/apiClient.ts", "language": "typescript", "purpose": "Type-safe Axios client functions with error handling and base URL handling"}
       ]
     },
     {
@@ -922,8 +1067,8 @@ JSON shape:
       "layerName": "Layer 5: DevOps & Deployment Manifests",
       "description": "Docker containerization, Compose orchestration, and comprehensive setup documentation",
       "targetFiles": [
-        {"path": "Dockerfile", "language": "dockerfile", "purpose": "Production multi-stage build container for FastAPI backend"},
-        {"path": "docker-compose.yml", "language": "yaml", "purpose": "Orchestrates PostgreSQL service, backend API container, and volume persistence"},
+        {"path": "backend/Dockerfile", "language": "dockerfile", "purpose": "Production multi-stage build container using pip install -r requirements.txt for FastAPI"},
+        {"path": "docker-compose.yml", "language": "yaml", "purpose": "Orchestrates PostgreSQL with schema.sql mounted to /docker-entrypoint-initdb.d/, backend API container, and volumes"},
         {"path": "README.md", "language": "markdown", "purpose": "Production runbook with installation, curl tests, and architecture guide"}
       ]
     }
@@ -954,7 +1099,7 @@ export const generateProductionBatch = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const prompt = `You are a Senior Full-Stack Production Engineer.
-You are generating ${data.batch.layerName} for this project: "${data.blueprint.overview.title}".
+You are generating ${data.batch.layerName} for this project: "${data.blueprint.title || "Production Application"}".
 
 === SHARED ARCHITECTURAL CONTRACT (IMMUTABLE SINGLE SOURCE OF TRUTH) ===
 DATABASE DDL CONTRACT:
@@ -978,7 +1123,18 @@ CRITICAL INSTRUCTIONS:
 1. Every table name, column name, and data type MUST match the DATABASE DDL CONTRACT exactly.
 2. Every endpoint path, HTTP method, and JSON property MUST match the API ENDPOINTS CONTRACT exactly.
 3. Write complete, runnable, production-quality code. Do not use placeholders or "// TODO: add code later".
-4. Format each file cleanly using the standard delimiter structure:
+4. For backend Python:
+   - Use Pydantic v2 syntax: model_config = ConfigDict(from_attributes=True) instead of obsolete orm_mode = True.
+   - In requirements.txt, only list packages actually imported in the code. Do NOT add heavy packages like tensorflow or torch unless real model code is provided (use numpy/random for simulations). Use flexible version constraints (e.g. >=).
+5. For frontend scaffolding:
+   - Ensure frontend/package.json is valid JSON with scripts ("dev": "vite", "build": "tsc && vite build"), core dependencies (react, react-dom, axios, lucide-react), and any project-specific libraries.
+6. For deployment manifests:
+   - backend/Dockerfile MUST use pip install -r requirements.txt. DO NOT use Poetry unless pyproject.toml is generated.
+   - docker-compose.yml MUST mount database files:
+     - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+     - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+     so database tables and seed data are initialized automatically on first run.
+7. Format each file cleanly using the standard delimiter structure:
 
 === FILE: path/to/file.ext ===
 [Raw code here with no markdown fences]

@@ -3,13 +3,15 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Blueprint, StudentProfile } from "@/lib/types";
+import { SarthiLogo } from "./SarthiLogo";
+import { Send, Sparkles, X, Bot } from "lucide-react";
 
 const PROMPTS = [
-  "I'm stuck on where to start",
+  "Where should I start coding first?",
   "Explain the hardest part of this plan",
-  "Why this tech stack for me?",
-  "What could go wrong in week 3?",
-  "How do I explain this to my examiner?",
+  "Why is this tech stack ideal for my background?",
+  "What potential blockers should I prepare for?",
+  "How should I explain this architecture in my viva?",
 ];
 
 export function Mentor({
@@ -70,48 +72,45 @@ export function Mentor({
     m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
 
   return (
-    <section className={`panel flex flex-col overflow-hidden ${compact ? "h-[30rem]" : "h-[40rem] lg:h-[46rem]"}`}>
-      <div className="flex items-center gap-3 border-b-2 border-border bg-sunken px-5 py-3">
-        <svg viewBox="0 0 40 40" className="size-9 shrink-0">
-          <circle cx="20" cy="20" r="16" fill="var(--grape)" stroke="var(--foreground)" strokeWidth="3" />
-          <circle cx="14" cy="18" r="2.5" fill="var(--grape-foreground)" />
-          <circle cx="26" cy="18" r="2.5" fill="var(--grape-foreground)" />
-          <path
-            d="M13 26 q7 5 14 0"
-            fill="none"
-            stroke="var(--grape-foreground)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
+    <section className={`panel flex flex-col overflow-hidden border border-slate-200/80 bg-white shadow-xl shadow-blue-500/5 ${compact ? "h-[30rem]" : "h-[40rem] lg:h-[46rem]"}`}>
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/40 px-5 py-3.5">
+        <SarthiLogo size={32} />
         <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-extrabold leading-tight">Sarthi — Your Project Mentor</p>
-          <p className="mono-label truncate">doubts, problems & guidance</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-display text-sm font-bold text-slate-900 leading-tight">Ask Sarthi</p>
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
+          <p className="text-[11px] text-slate-500 truncate">Context-aware architecture guide & copilot</p>
         </div>
         {onClose && (
           <button
             onClick={onClose}
             aria-label="Close mentor chat"
-            className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-border text-sm font-bold"
+            className="grid size-7 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all cursor-pointer"
           >
-            ✕
+            <X className="size-3.5" />
           </button>
         )}
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
+      {/* Messages area */}
+      <div className="flex-1 space-y-3.5 overflow-y-auto p-5">
         {messages.length === 0 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              This is a place to talk things through — ask your doubts, describe a problem you're
-              stuck on, or get advice on how to approach a step.
+          <div className="space-y-3.5 rounded-2xl border border-blue-100 bg-blue-50/40 p-4">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-700">
+              <Sparkles className="size-4 text-blue-600" />
+              <span>Ask Sarthi Anything About Your Project</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              I have full knowledge of your skills, chosen tech stack, and blueprint. Ask me for coding assistance, debugging advice, or interview prep.
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {PROMPTS.map((p) => (
                 <button
                   key={p}
                   onClick={() => send(p)}
-                  className="rounded-full border-2 border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:border-blue-400 hover:bg-blue-50/80 hover:text-blue-700 cursor-pointer shadow-2xs"
                 >
                   {p}
                 </button>
@@ -121,12 +120,12 @@ export function Mentor({
         )}
 
         {messages.map((m) => (
-          <div key={m.id} className={m.role === "user" ? "flex justify-end" : ""}>
+          <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
-              className={`q-rise max-w-[88%] text-sm leading-relaxed ${
+              className={`q-rise max-w-[88%] text-xs sm:text-sm leading-relaxed ${
                 m.role === "user"
-                  ? "whitespace-pre-wrap rounded-2xl rounded-tr-sm border-2 border-foreground bg-primary px-3.5 py-2.5 text-primary-foreground"
-                  : "mentor-md"
+                  ? "whitespace-pre-wrap rounded-2xl rounded-tr-xs bg-blue-600 px-4 py-2.5 text-white shadow-sm"
+                  : "mentor-md rounded-2xl rounded-tl-xs border border-slate-200/80 bg-slate-50/70 p-4 text-slate-800 shadow-2xs"
               }`}
             >
               {m.role === "user" ? textOf(m) : <Markdown>{textOf(m)}</Markdown>}
@@ -134,16 +133,25 @@ export function Mentor({
           </div>
         ))}
 
-        {status === "submitted" && <p className="mono-label animate-pulse">thinking…</p>}
+        {status === "submitted" && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <div className="size-2 rounded-full bg-blue-600 animate-bounce" />
+            <div className="size-2 rounded-full bg-indigo-600 animate-bounce delay-100" />
+            <div className="size-2 rounded-full bg-blue-400 animate-bounce delay-200" />
+            <span>Sarthi is analyzing your blueprint…</span>
+          </div>
+        )}
+
         {error && (
-          <p className="rounded-xl border-2 border-destructive bg-destructive/10 p-3 text-xs text-destructive">
-            The connection dropped. Please send that again.
-          </p>
+          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-600">
+            Connection dropped. Please retry sending your query.
+          </div>
         )}
         <div ref={endRef} />
       </div>
 
-      <div className="border-t-2 border-border px-5 py-3">
+      {/* Input area */}
+      <div className="border-t border-slate-100 bg-slate-50/40 p-3.5">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -162,16 +170,16 @@ export function Mentor({
               }
             }}
             rows={2}
-            placeholder="Ask a doubt, or describe what you're stuck on…"
-            className="flex-1 resize-none rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            placeholder="Ask a technical doubt, explain an architecture layer, or get guidance…"
+            className="flex-1 resize-none rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={busy || !input.trim()}
-            className="pop-btn grid size-10 shrink-0 place-items-center bg-accent text-accent-foreground"
+            className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 disabled:opacity-40 cursor-pointer"
             aria-label="Send message"
           >
-            ↑
+            <Send className="size-4" />
           </button>
         </form>
       </div>

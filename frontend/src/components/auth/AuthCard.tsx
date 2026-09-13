@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Mascot } from "@/components/quest/Mascot";
+import { SarthiLogo } from "@/components/quest/SarthiLogo";
 import { useAuth } from "@/lib/auth-context";
 import { Mail, Lock, User as UserIcon, Eye, EyeOff, Sparkles, ArrowRight, CheckCircle2, LogOut, ShieldCheck } from "lucide-react";
 
 interface AuthCardProps {
   onStartJourney: () => void;
+  onAuthSuccess?: () => void;
   className?: string;
 }
 
-export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
+export function AuthCard({ onStartJourney, onAuthSuccess, className = "" }: AuthCardProps) {
   const { user, isAuthenticated, login, register, continueAsGuest, logout } = useAuth();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -23,6 +24,14 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
     setErrorMsg(null);
   };
 
+  const notifySuccess = () => {
+    if (onAuthSuccess) {
+      onAuthSuccess();
+    } else {
+      onStartJourney();
+    }
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -33,7 +42,7 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
     setLoading(true);
     try {
       await login(email, password);
-      onStartJourney();
+      notifySuccess();
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid credentials.");
     } finally {
@@ -55,7 +64,7 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
     setLoading(true);
     try {
       await register(email, password, fullName);
-      onStartJourney();
+      notifySuccess();
     } catch (err: any) {
       setErrorMsg(err.message || "Registration failed. Try again.");
     } finally {
@@ -65,52 +74,49 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
 
   const handleGuest = () => {
     continueAsGuest(fullName || undefined);
-    onStartJourney();
+    notifySuccess();
   };
 
   // If already logged in, show student profile card with quick start
   if (isAuthenticated && user) {
     return (
-      <div className={`panel q-pop border-3 border-foreground bg-card p-6 shadow-[6px_6px_0_0_var(--foreground)] ${className}`}>
-        <div className="flex items-center gap-3 border-b-2 border-border pb-4">
-          <div className="flex size-12 items-center justify-center rounded-2xl border-2 border-foreground bg-accent text-accent-foreground font-display text-lg font-black shadow-[2px_2px_0_0_var(--foreground)]">
+      <div className={`panel q-pop rounded-3xl border border-slate-200/80 bg-white/95 p-6 sm:p-7 shadow-xl shadow-blue-500/5 ${className}`}>
+        <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-display text-lg font-bold shadow-md shadow-blue-500/20">
             {user.fullName ? user.fullName[0].toUpperCase() : user.email[0].toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate font-display text-base font-extrabold sm:text-lg">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-display text-base font-bold text-slate-900 sm:text-lg">
                 {user.fullName || user.email.split("@")[0]}
               </span>
-              <span className="mono-label rounded-md bg-success/20 px-1.5 py-0.5 text-[9px] font-bold text-success-foreground border border-success/30">
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
                 {user.isGuest ? "Guest" : "Verified Student"}
               </span>
             </div>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <p className="truncate text-xs text-slate-500">{user.email}</p>
           </div>
         </div>
 
-        <div className="mt-4 space-y-3">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Your Sarthi AI session is active. Ready to discover tailored project ideas and run your reality check?
+        <div className="mt-5 space-y-4">
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Welcome back! Ready to discover tailored project ideas, generate architectural blueprints, and consult your AI mentor?
           </p>
           <button
             onClick={onStartJourney}
-            className="pop-btn w-full bg-accent py-3 font-display text-base font-extrabold text-accent-foreground"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-teal-600 py-3 font-display text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-teal-700 hover:shadow-lg cursor-pointer"
           >
-            Launch Project Discovery →
+            <span>Continue to Project Discovery</span>
+            <ArrowRight className="size-4" />
           </button>
-          <div className="flex items-center justify-between pt-1">
-            <span className="mono-label text-[10px] text-muted-foreground flex items-center gap-1">
-              <ShieldCheck className="size-3 text-success" />
-              Authenticated Session
-            </span>
+          <div className="flex items-center justify-end pt-1">
             <button
               onClick={logout}
-              className="mono-label flex items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all"
+              className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-medium text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
               title="Log Out of Sarthi"
             >
-              <LogOut className="size-3.5" />
-              <span>Log Out</span>
+              <LogOut className="size-3" />
+              <span>Switch Account</span>
             </button>
           </div>
         </div>
@@ -119,15 +125,15 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
   }
 
   return (
-    <div className={`panel q-rise border-3 border-foreground bg-card p-5 sm:p-7 shadow-[6px_6px_0_0_var(--foreground)] ${className}`}>
-      <div className="mb-4 text-center">
-        <span className="mono-label inline-block bg-accent/20 px-2.5 py-1 text-accent-foreground border border-accent/40 rounded-full mb-1.5">
-          Student Authentication
-        </span>
-        <h3 className="font-display text-xl sm:text-2xl font-black">
-          {tab === "register" ? "Create Student Account" : "Sign in to Sarthi"}
+    <div className={`panel q-rise rounded-3xl border border-slate-200/80 bg-white/95 p-6 sm:p-8 shadow-xl shadow-blue-500/5 ${className}`}>
+      <div className="mb-5 text-center">
+        <div className="flex justify-center mb-2.5">
+          <SarthiLogo size={44} />
+        </div>
+        <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-900">
+          {tab === "register" ? "Create Student Account" : "Sign In to Sarthi"}
         </h3>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           {tab === "register"
             ? "Save your answers, scored ideas, and blueprint."
             : "Resume your final-year engineering project journey."}
@@ -135,96 +141,96 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex rounded-xl border-2 border-foreground bg-sunken p-1 font-display mb-4">
-        <button
-          type="button"
-          onClick={() => handleTabSwitch("register")}
-          className={`flex-1 rounded-lg py-1.5 text-xs font-extrabold transition-all duration-200 ${
-            tab === "register"
-              ? "border-2 border-foreground bg-background text-foreground shadow-[2px_2px_0_0_var(--foreground)]"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          New Student
-        </button>
+      <div className="flex rounded-xl bg-slate-100 p-1 mb-5">
         <button
           type="button"
           onClick={() => handleTabSwitch("login")}
-          className={`flex-1 rounded-lg py-1.5 text-xs font-extrabold transition-all duration-200 ${
+          className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
             tab === "login"
-              ? "border-2 border-foreground bg-background text-foreground shadow-[2px_2px_0_0_var(--foreground)]"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-white text-slate-900 shadow-xs"
+              : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Sign In
         </button>
+        <button
+          type="button"
+          onClick={() => handleTabSwitch("register")}
+          className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
+            tab === "register"
+              ? "bg-white text-slate-900 shadow-xs"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          New Student
+        </button>
       </div>
 
       {errorMsg && (
-        <div className="mb-3 rounded-lg border-2 border-destructive bg-destructive/10 p-2.5 text-xs font-semibold text-destructive">
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50/80 p-3 text-xs font-semibold text-red-700">
           {errorMsg}
         </div>
       )}
 
       <form
         onSubmit={tab === "login" ? handleLoginSubmit : handleRegisterSubmit}
-        className="space-y-3"
+        className="space-y-3.5"
       >
         {tab === "register" && (
           <div className="space-y-1">
-            <label className="mono-label text-[10px] font-bold text-foreground">
-              Your Name
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
+              Full Name
             </label>
             <div className="relative">
-              <UserIcon className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <UserIcon className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Arjun Sharma"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-xl border-2 border-foreground bg-background py-2 pl-9 pr-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-primary"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-3.5 text-xs sm:text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
         )}
 
         <div className="space-y-1">
-          <label className="mono-label text-[10px] font-bold text-foreground">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
             Email Address
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input
               type="email"
               required
               placeholder="student@college.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border-2 border-foreground bg-background py-2 pl-9 pr-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-primary"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-3.5 text-xs sm:text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="mono-label text-[10px] font-bold text-foreground">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border-2 border-foreground bg-background py-2 pl-9 pr-9 text-xs sm:text-sm font-medium focus:outline-none focus:border-primary"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-10 text-xs sm:text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
             >
-              {showPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
         </div>
@@ -232,11 +238,11 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
         <button
           type="submit"
           disabled={loading}
-          className="pop-btn w-full bg-accent py-2.5 font-display text-sm font-extrabold text-accent-foreground disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-lg disabled:opacity-60 cursor-pointer"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="size-3.5 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+              <span className="size-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               Authenticating...
             </span>
           ) : (
@@ -248,15 +254,20 @@ export function AuthCard({ onStartJourney, className = "" }: AuthCardProps) {
       </form>
 
       {/* Guest Fast-Track */}
-      <div className="mt-4 border-t border-border pt-3">
+      <div className="mt-5 border-t border-slate-100 pt-4">
         <button
           type="button"
           onClick={handleGuest}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-foreground/30 bg-sunken py-2 text-xs font-semibold text-foreground hover:border-foreground transition-all"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer"
         >
-          <Sparkles className="size-3 text-accent" />
+          <Sparkles className="size-3.5 text-blue-600" />
           <span>Continue as Guest / Evaluator</span>
         </button>
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-400">
+        <ShieldCheck className="size-3 text-emerald-500" />
+        <span>Secured with JWT & Supabase PostgreSQL encryption</span>
       </div>
     </div>
   );

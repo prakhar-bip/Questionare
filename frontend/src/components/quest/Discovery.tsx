@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { StudentProfile } from "@/lib/types";
-import { SparkLine } from "./Mascot";
+import { Sparkles, ArrowRight, ArrowLeft, Check } from "lucide-react";
 
 const SKILLS = [
   "Web development",
@@ -50,7 +50,13 @@ const INTERESTS = [
 const DOMAINS = ["AI / ML", "Full-stack web", "Mobile", "Data engineering", "IoT & hardware", "Security", "AR / VR", "Automation"];
 const RESOURCES = ["Laptop only", "GPU access", "Cloud credits", "Sensors / hardware", "Real dataset", "University lab", "Mentor / supervisor"];
 
-const STEPS = ["Who you are", "What you can build", "What excites you", "Where you're headed", "Your constraints"];
+const STEPS = [
+  { title: "Who you are", desc: "Your background and current experience" },
+  { title: "What you can build", desc: "Your technical arsenal and skills" },
+  { title: "What excites you", desc: "Domains and project themes you care about" },
+  { title: "Where you're headed", desc: "Career goals and project format" },
+  { title: "Your constraints", desc: "Time budget, team size and available resources" },
+];
 
 function Chips({
   options,
@@ -63,12 +69,11 @@ function Chips({
   onChange: (v: string[]) => void;
   tone?: "primary" | "accent" | "grape";
 }) {
-  const toneOn =
-    tone === "accent"
-      ? "bg-accent text-accent-foreground"
-      : tone === "grape"
-        ? "bg-grape text-grape-foreground"
-        : "bg-primary text-primary-foreground";
+  const activeClass =
+    tone === "grape"
+      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-500/20"
+      : "bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20";
+
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
@@ -78,11 +83,14 @@ function Chips({
             key={opt}
             type="button"
             onClick={() => onChange(on ? value.filter((v) => v !== opt) : [...value, opt])}
-            className={`rounded-full border-2 border-foreground px-3 py-1.5 text-sm font-medium transition-transform duration-150 hover:-translate-y-0.5 ${
-              on ? `${toneOn} shadow-[0_3px_0_0_var(--foreground)]` : "bg-surface text-foreground"
+            className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
+              on
+                ? activeClass
+                : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100"
             }`}
           >
-            {opt}
+            {on && <Check className="size-3 stroke-[3]" />}
+            <span>{opt}</span>
           </button>
         );
       })}
@@ -94,8 +102,8 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <div className="space-y-2">
       <div className="flex items-baseline gap-2">
-        <span className="mono-label">{label}</span>
-        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+        <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{label}</label>
+        {hint && <span className="text-xs text-slate-400 font-normal">{hint}</span>}
       </div>
       {children}
     </div>
@@ -103,7 +111,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 const inputCls =
-  "w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-primary";
+  "w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20";
 
 export function Discovery({
   busy,
@@ -152,37 +160,56 @@ export function Discovery({
             : true;
 
   return (
-    <section className="panel mx-auto max-w-3xl overflow-hidden">
-      <div className="flex items-center justify-between border-b-2 border-border bg-sunken px-6 py-4">
-        <div>
-          <h2 className="font-display text-2xl font-extrabold">{STEPS[step]}</h2>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {STEPS.map((s, i) => (
-            <span
-              key={s}
-              className={`h-2.5 rounded-full transition-all duration-300 ${
-                i === step ? "w-7 bg-accent" : i < step ? "w-2.5 bg-primary" : "w-2.5 bg-border"
-              }`}
-            />
-          ))}
+    <section className="panel mx-auto max-w-3xl overflow-hidden border border-slate-200/80 bg-white/95 shadow-xl shadow-blue-500/5">
+      {/* Header bar with progress */}
+      <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/50 px-6 py-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-blue-100 px-2 py-0.5 font-mono text-[11px] font-bold text-blue-700">
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <span className="text-xs font-semibold text-slate-400">· {Math.round(((step + 1) / STEPS.length) * 100)}% Completed</span>
+            </div>
+            <h2 className="mt-1.5 font-display text-2xl font-bold text-slate-900">{STEPS[step]?.title}</h2>
+            <p className="text-xs text-slate-500">{STEPS[step]?.desc}</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((s, i) => (
+              <span
+                key={s.title}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === step
+                    ? "w-8 bg-blue-600 shadow-xs shadow-blue-500/40"
+                    : i < step
+                      ? "w-2.5 bg-blue-400"
+                      : "w-2.5 bg-slate-200"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      <div key={step} className="q-rise space-y-6 px-6 py-6">
+      <div key={step} className="q-rise space-y-6 px-6 py-7 sm:px-8">
         {step === 0 && (
           <>
             <Field label="What should we call you?">
               <input
                 className={inputCls}
                 value={p.name}
-                placeholder="Your name"
+                placeholder="e.g. Arjun Sharma"
                 onChange={(e) => set("name", e.target.value)}
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Field of study">
-                <input className={inputCls} value={p.fieldOfStudy} onChange={(e) => set("fieldOfStudy", e.target.value)} />
+                <input
+                  className={inputCls}
+                  value={p.fieldOfStudy}
+                  placeholder="Computer Science & Engineering"
+                  onChange={(e) => set("fieldOfStudy", e.target.value)}
+                />
               </Field>
               <Field label="Year of study">
                 <select className={inputCls} value={p.yearOfStudy} onChange={(e) => set("yearOfStudy", e.target.value)}>
@@ -285,25 +312,39 @@ export function Discovery({
         {step === 4 && (
           <>
             <div className="grid gap-6 sm:grid-cols-2">
-              <Field label={`Hours per week — ${p.hoursPerWeek}`}>
-                <input
-                  type="range"
-                  min={2}
-                  max={40}
-                  value={p.hoursPerWeek}
-                  onChange={(e) => set("hoursPerWeek", Number(e.target.value))}
-                  className="w-full accent-[var(--accent)]"
-                />
+              <Field label={`Hours per week — ${p.hoursPerWeek} hrs`}>
+                <div className="space-y-1">
+                  <input
+                    type="range"
+                    min={2}
+                    max={40}
+                    value={p.hoursPerWeek}
+                    onChange={(e) => set("hoursPerWeek", Number(e.target.value))}
+                    className="w-full accent-blue-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400">
+                    <span>2 hrs (light)</span>
+                    <span>20 hrs (standard)</span>
+                    <span>40 hrs (full time)</span>
+                  </div>
+                </div>
               </Field>
-              <Field label={`Weeks available — ${p.weeks}`}>
-                <input
-                  type="range"
-                  min={4}
-                  max={32}
-                  value={p.weeks}
-                  onChange={(e) => set("weeks", Number(e.target.value))}
-                  className="w-full accent-[var(--accent)]"
-                />
+              <Field label={`Weeks available — ${p.weeks} wks`}>
+                <div className="space-y-1">
+                  <input
+                    type="range"
+                    min={4}
+                    max={32}
+                    value={p.weeks}
+                    onChange={(e) => set("weeks", Number(e.target.value))}
+                    className="w-full accent-blue-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400">
+                    <span>4 wks (sprint)</span>
+                    <span>16 wks (semester)</span>
+                    <span>32 wks (year)</span>
+                  </div>
+                </div>
               </Field>
             </div>
             <Field label="Team size">
@@ -317,34 +358,37 @@ export function Discovery({
             <Field label="Resources you can use">
               <Chips options={RESOURCES} value={p.resources} onChange={(v) => set("resources", v)} />
             </Field>
-            <SparkLine className="h-8 w-full opacity-70" />
           </>
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t-2 border-border bg-sunken px-6 py-4">
+      {/* Footer navigation */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-6 py-4 sm:px-8">
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={step === 0 || busy}
-          className="mono-label rounded-full border-2 border-border px-4 py-2 disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-50 disabled:opacity-35 cursor-pointer shadow-xs"
         >
-          back
+          <ArrowLeft className="size-3.5" />
+          <span>Back</span>
         </button>
         {step < STEPS.length - 1 ? (
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!canContinue}
-            className="pop-btn bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-md disabled:opacity-50 cursor-pointer"
           >
-            Continue
+            <span>Continue</span>
+            <ArrowRight className="size-3.5" />
           </button>
         ) : (
           <button
             onClick={() => onComplete(p)}
             disabled={busy}
-            className="pop-btn bg-accent px-6 py-2.5 text-sm font-bold text-accent-foreground"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-sm shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-md disabled:opacity-50 cursor-pointer"
           >
-            {busy ? "Creating your profile…" : "Create my profile"}
+            <Sparkles className="size-4" />
+            <span>{busy ? "Creating your profile…" : "Create My Profile"}</span>
           </button>
         )}
       </div>

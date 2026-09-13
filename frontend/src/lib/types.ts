@@ -165,6 +165,8 @@ export type ProductionManifest = {
   databaseContract: string;
   apiContract: ApiEndpointContract[];
   envContract: string[];
+  extraFrontendPackages?: string[];
+  extraBackendPackages?: string[];
   batches: ProductionBatch[];
 };
 

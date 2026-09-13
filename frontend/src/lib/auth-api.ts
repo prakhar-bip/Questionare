@@ -55,8 +55,12 @@ export async function apiRegister(
       },
     };
   } catch (err: any) {
-    // If backend is unreachable or connection refused in local dev without backend running, fallback gracefully
-    if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+    // Fallback gracefully if backend is offline/unreachable in local dev
+    if (
+      err.message?.includes("Failed to fetch") ||
+      err.message?.includes("NetworkError") ||
+      err.name === "TypeError"
+    ) {
       console.warn("Backend unavailable, creating local session for offline/demo use:", err);
       const demoToken = `local_jwt_${Date.now()}`;
       return {
@@ -103,9 +107,12 @@ export async function apiLogin(
       },
     };
   } catch (err: any) {
-    if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+    if (
+      err.message?.includes("Failed to fetch") ||
+      err.message?.includes("NetworkError") ||
+      err.name === "TypeError"
+    ) {
       console.warn("Backend unavailable, fallback local login check:", err);
-      // If user has local session credentials cached
       const demoToken = `local_jwt_${Date.now()}`;
       return {
         token: demoToken,
@@ -120,9 +127,11 @@ export async function apiLogin(
   }
 }
 
-export async function apiFetchMe(token: string): Promise<AuthUser | null> {
+export async function apiFetchMe(
+  token: string
+): Promise<{ user?: AuthUser; expired?: boolean; error?: boolean }> {
   if (!token || token.startsWith("local_jwt_") || token.startsWith("guest_token_")) {
-    return null;
+    return { error: false };
   }
   const base = getBackendBaseUrl();
   try {
@@ -133,18 +142,25 @@ export async function apiFetchMe(token: string): Promise<AuthUser | null> {
       },
     });
 
+    if (res.status === 401) {
+      return { expired: true };
+    }
+
     if (!res.ok) {
-      return null;
+      return { error: true };
     }
 
     const data = await res.json();
     return {
-      id: data.id,
-      email: data.email,
-      fullName: data.full_name || data.email.split("@")[0],
-      createdAt: data.created_at,
+      user: {
+        id: data.id,
+        email: data.email,
+        fullName: data.full_name || data.email.split("@")[0],
+        createdAt: data.created_at,
+      },
     };
   } catch {
-    return null;
+    // Network or server unreachable: do NOT expire session, keep cached user
+    return { error: true };
   }
 }

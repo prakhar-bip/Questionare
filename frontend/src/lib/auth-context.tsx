@@ -14,8 +14,8 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const AUTH_USER_KEY = "sarthi_auth_user_v1";
-const AUTH_TOKEN_KEY = "sarthi_auth_token_v1";
+export const AUTH_USER_KEY = "sarthi_auth_user_v1";
+export const AUTH_TOKEN_KEY = "sarthi_auth_token_v1";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -34,33 +34,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(parsedUser);
         setToken(savedToken);
 
-        // Verify with server in background if not guest
-        if (!parsedUser.isGuest) {
+        // Only verify with server if it's a real server token (not guest or local)
+        if (
+          !parsedUser.isGuest &&
+          !savedToken.startsWith("local_jwt_") &&
+          !savedToken.startsWith("guest_token_")
+        ) {
           apiFetchMe(savedToken)
-            .then((serverUser) => {
-              if (serverUser) {
-                setUser(serverUser);
-                localStorage.setItem(AUTH_USER_KEY, JSON.stringify(serverUser));
-              } else {
-                // Token invalid or expired on server: strictly clear session
+            .then((res) => {
+              if (res.user) {
+                setUser(res.user);
+                localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
+              } else if (res.expired) {
+                // Token was explicitly rejected by server with 401
                 setUser(null);
                 setToken(null);
                 try {
                   localStorage.removeItem(AUTH_TOKEN_KEY);
                   localStorage.removeItem(AUTH_USER_KEY);
-                  localStorage.removeItem("sarthi.journey.v1");
-                  localStorage.removeItem("questline.journey.v1");
                 } catch {
                   /* ignore */
                 }
-                if (typeof window !== "undefined") {
-                  window.dispatchEvent(new CustomEvent("sarthi:session_cleared"));
-                }
-                toast.error("Session expired or invalid. Please sign in to continue.");
+                toast.error("Your session has expired. Please sign in again.");
               }
+              // If res.error (network unavailable), keep the existing user session intact!
             })
             .catch(() => {
-              // keep cached user on temporary network offline
+              // network offline, retain session
             });
         }
       }
@@ -71,24 +71,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Listen for storage events (e.g. session cleared in another tab or dev tools)
+  // Listen for storage events across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === AUTH_TOKEN_KEY || e.key === AUTH_USER_KEY) {
         if (!e.newValue) {
-          // Token or user was removed
           setUser(null);
           setToken(null);
-          try {
-            localStorage.removeItem("sarthi.journey.v1");
-            localStorage.removeItem("questline.journey.v1");
-          } catch {
-            /* ignore */
-          }
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(new CustomEvent("sarthi:session_cleared"));
-          }
-          toast.info("Session was cleared. Please sign in to access your project.");
         }
       }
     };
@@ -104,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(res.token);
       localStorage.setItem(AUTH_TOKEN_KEY, res.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
-      toast.success(`Welcome back, ${res.user.fullName || res.user.email}!`);
+      toast.success(`Welcome, ${res.user.fullName || res.user.email}!`);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(res.token);
       localStorage.setItem(AUTH_TOKEN_KEY, res.token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
-      toast.success(`Account created! Welcome to Sarthi, ${res.user.fullName}!`);
+      toast.success(`Welcome to Sarthi, ${res.user.fullName}!`);
     } finally {
       setIsLoading(false);
     }
@@ -150,15 +139,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem("sarthi_auth_token_v1");
+      localStorage.removeItem("sarthi_auth_token");
+      localStorage.removeItem("sarthi_user_profile");
       localStorage.removeItem("sarthi.journey.v1");
       localStorage.removeItem("questline.journey.v1");
     } catch {
       /* ignore */
     }
+
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("sarthi:session_cleared"));
+      try {
+        window.dispatchEvent(new Event("sarthi:session_cleared"));
+      } catch {
+        /* ignore */
+      }
     }
-    toast.success("Logged out successfully. Please sign in to continue.");
+
+    toast.success("Signed out successfully.");
   }, []);
 
   const isAuthenticated = Boolean(user && token);

@@ -1,5 +1,7 @@
 import type { Blueprint, StudentProfile } from "@/lib/types";
 import { Mentor } from "./Mentor";
+import { SarthiLogo } from "./SarthiLogo";
+import { MessageSquare, X } from "lucide-react";
 
 export function MentorDock({
   profile,
@@ -25,7 +27,7 @@ export function MentorDock({
             : "pointer-events-none translate-y-3 scale-95 opacity-0"
         }`}
       >
-        <div className="overflow-hidden rounded-2xl shadow-[0_10px_0_0_var(--border)]">
+        <div className="overflow-hidden rounded-2xl shadow-2xl shadow-blue-500/20 border border-slate-200">
           <Mentor
             profile={profile}
             blueprint={blueprint}
@@ -38,17 +40,13 @@ export function MentorDock({
       </div>
 
       <button
+        type="button"
         onClick={() => onToggle(!open)}
         aria-expanded={open}
-        className="pop-btn flex items-center gap-2 rounded-full bg-grape px-4 py-3 text-sm font-bold text-grape-foreground"
+        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 cursor-pointer"
       >
-        <svg viewBox="0 0 40 40" className="size-7 shrink-0">
-          <circle cx="20" cy="20" r="16" fill="currentColor" opacity="0.25" />
-          <circle cx="14" cy="18" r="2.5" fill="currentColor" />
-          <circle cx="26" cy="18" r="2.5" fill="currentColor" />
-          <path d="M13 26 q7 5 14 0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
-        {open ? "Hide Sarthi" : "Ask Sarthi"}
+        <SarthiLogo size={20} />
+        <span>{open ? "Minimize Chat" : "Ask Sarthi"}</span>
       </button>
     </div>
   );
